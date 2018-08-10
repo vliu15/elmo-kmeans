@@ -2,7 +2,7 @@
 To convert Optum's Medica speech transcriptions to ELMo embeddings per sentence for clustering.
 
 ## Requirements:
- * Python3
+ * Python3 (>=3.6)
  * AllenNLP
  * TensorFlow
  * NumPy
@@ -15,10 +15,16 @@ To install the necessary dependencies:
 ```bash
 apt-get install python3-pip
 pip3 install allennlp
-pip3 install tensorflow
+pip3 install tensorflow-gpu
 pip3 install numpy
 pip3 install sklearn
 pip3 install torch
+```
+
+Or to run inside a Docker container:
+```bash
+docker build -t elmo-embeddings .
+docker exec -i -t elmo-embeddings /bin/bash
 ```
 
 ## Usage
