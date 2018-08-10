@@ -25,6 +25,7 @@ Or to run inside a Docker container:
 ```bash
 docker build -t elmo-embeddings .
 docker exec -i -t elmo-embeddings /bin/bash
+python3.6 main.py
 ```
 
 ## Usage
