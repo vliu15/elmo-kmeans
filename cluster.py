@@ -4,55 +4,66 @@ from sklearn.cluster import MeanShift, estimate_bandwidth, DBSCAN
 from sklearn.manifold import TSNE
 
 # cluster NumPy arrays of sentence vectors using MeanShift
-def meanshift(vectors_np, out_file):
+def meanshift(params vectors_np):
 
     # compute clusters
     bandwidth = estimate_bandwidth(vectors_np)
 
-    ms = MeanShift(bin_seeding=True)
+    ms = MeanShift(bin_seeding=params.ms_bin_seeding)
     labels = ms.fit_predict(vectors_np)
     clusters = ms.cluster_centers_
     print("Number of estimated clusters using MeanShift: %d\n" % len(clusters))
     print("Noise: %d\n" %  len([i for i in labels if i == -1]))
 
     # write list of labels to output
-    with open(out_file, 'w') as f:
+    with open(params.ms_labels_file, 'w') as f:
         json.dump(labels.tolist(), f)
 
 
 # cluster NumPy arrays of sentence vectors using DBSCAN
-def dbscan(vectors_np, out_file):
+def dbscan(params, vectors_np):
   
     # compute clusters
-    db = DBSCAN(eps=10, min_samples=100, metric='euclidean', algorithm='brute', n_jobs=-1)
+    db = DBSCAN(eps=params.db_eps,
+                min_samples=params.db_min_samples,
+                metric=params.db_metric,
+                algorithm=params.db_algorithm,
+                n_jobs=params.db_n_jobs)
+
     labels = db.fit_predict(vectors_np)
     print("Number of estimated clusters using DBSCAN: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
     print("Noise: %d\n" %  len([i for i in labels if i == -1]))
 
     # write list of labels to output
-    with open(out_file, 'w') as f:
+    with open(params.db_labels_file, 'w') as f:
         json.dump(labels.tolist(), f)
 
 
 # cluster NumPy arrays of sentence vectors using OPTICS
-def optics(vectors_np, out_file):
+def optics(params, vectors_np):
 
     # compute clusters
-    op = OPTICS(min_samples=50, p=2)
+    op = OPTICS(min_samples=params.op_min_samples)
     labels = op.fit_predict(vectors_np)
     ids = op.core_sample_indices_
     print("Number of estimated clusters using OPTICS: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
     print("Noise: %d\n" % len([i for i in labels if i == -1]))
 
     # write list of labels to output
-    with open(out_file, 'w') as f:
+    with open(params.op_labels_file, 'w') as f:
         json.dump(labels.tolist(), f)
 
 
 # project NumPy arrays of sentence vectors into 3D using TSNE
-def tsne(vectors_np, out_file):
-   ts = TSNE(n_components=3, perplexity=50, learning_rate=20, n_iter=5000)
-   vectors_ts = ts.fit_transform(vectors_np)
+def tsne(params, vectors_np):
 
-   np.save(out_file, vectors_ts)
-   return vectors_ts
+    # use t-SNE
+    ts = TSNE(n_components=params.ts_n_components,
+              perplexity=params.ts_perplexity,
+              learning_rate=params.ts_learning_rate,
+              n_iter=params.ts_n_iter)
+
+    vectors_ts = ts.fit_transform(vectors_np)
+
+    np.save(params.ts_embed_file, vectors_ts)
+    return vectors_ts

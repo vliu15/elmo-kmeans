@@ -3,11 +3,10 @@ from tensorflow.contrib.tensorboard.plugins import projector
 import numpy as np
 import os
 
-LOG_DIR = os.path.join(os.getcwd(), "output")
+def tensorboard(params):
+    LOG_DIR = params.log_dir
 
-def tensorboard(embeddings_file, metadata_file):
-
-    tmp = np.load(embeddings_file)
+    tmp = np.load(params.embedding_file)
     embedding_var = tf.Variable(tmp, trainable=False, name="embeddings")
 
     config = projector.ProjectorConfig()
@@ -17,7 +16,7 @@ def tensorboard(embeddings_file, metadata_file):
     embedding.tensor_name = embedding_var.name
 
     # link to metadata
-    embedding.metadata_path = metadata_file
+    embedding.metadata_path = params.metadata_file
 
     # write to LOG_DIR
     summary_writer = tf.summary.FileWriter(LOG_DIR)
