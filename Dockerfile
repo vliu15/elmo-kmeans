@@ -1,4 +1,4 @@
-FROM docker.optum.com/dl_lab/elmo:vincent_v1
+FROM docker.optum.com/dl_lab/elmo:tf-gpu
 
 RUN apt-get install wget && apt-get install update
 

@@ -4,10 +4,10 @@ from sklearn.cluster import MeanShift, estimate_bandwidth, DBSCAN
 from sklearn.manifold import TSNE
 
 # cluster NumPy arrays of sentence vectors using MeanShift
-def meanshift(params vectors_np):
+def meanshift(params, vectors_np):
 
     # compute clusters
-    bandwidth = estimate_bandwidth(vectors_np)
+    # bandwidth = estimate_bandwidth(vectors_np)
 
     ms = MeanShift(bin_seeding=params.ms_bin_seeding)
     labels = ms.fit_predict(vectors_np)
