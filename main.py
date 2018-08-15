@@ -31,6 +31,7 @@ tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
 ms_labels_file = os.path.join(output_dir, "ms_labels.json")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
 op_labels_file = os.path.join(output_dir, "op_labels.json")
+km_labels_file = os.path.join(os.getcwd(), "km_labels.json")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
 
@@ -99,6 +100,7 @@ flags.DEFINE_string("tsne_file", tsne_file, "file for t-SNE embeddings")
 flags.DEFINE_string("ms_labels_file", ms_labels_file, "file for MeanShift cluster labels")
 flags.DEFINE_string("db_labels_file", db_labels_file, "file for DBSCAN cluster labels")
 flags.DEFINE_string("op_labels_file", op_labels_file, "file for OPTICS cluster labels")
+flags.DEFINE_string("km_labels_file", km_labels_file, "file for KMeans cluster labels")
 flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
 
 params = flags.FLAGS
