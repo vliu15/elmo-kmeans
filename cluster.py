@@ -1,17 +1,20 @@
 import numpy as np
 import json
-from sklearn.cluster import MeanShift, estimate_bandwidth, DBSCAN
-from sklearn.manifold import TSNE
+from sklearn.cluster import MeanShift, estimate_bandwidth, DBSCAN, KMeans
 
-# cluster NumPy arrays of sentence vectors using MeanShift
-def meanshift(params, vectors_np):
 
-    # compute clusters
-    # bandwidth = estimate_bandwidth(vectors_np)
+def meanshift(params):
+    '''
+    Cluster arrays using MeanShift.
+    :params params.embedding_file: 2D NumPy arrays
+    '''
 
+    vectors = np.load(params.embedding_file)
+
+    # bandwidth = estimate_bandwidth(vectors)
     ms = MeanShift(bin_seeding=params.ms_bin_seeding)
-    labels = ms.fit_predict(vectors_np)
-    clusters = ms.cluster_centers_
+
+    labels = ms.fit_predict(vectors)
     print("Number of estimated clusters using MeanShift: %d\n" % len(clusters))
     print("Noise: %d\n" %  len([i for i in labels if i == -1]))
 
@@ -20,17 +23,21 @@ def meanshift(params, vectors_np):
         json.dump(labels.tolist(), f)
 
 
-# cluster NumPy arrays of sentence vectors using DBSCAN
-def dbscan(params, vectors_np):
-  
-    # compute clusters
+def dbscan(params):
+    '''
+    Cluster arrays using DBSCAN.
+    :params params.embedding_file: 2D NumPy arrays
+    '''
+
+    vectors = np.load(params.embedding_file)
+
     db = DBSCAN(eps=params.db_eps,
                 min_samples=params.db_min_samples,
                 metric=params.db_metric,
                 algorithm=params.db_algorithm,
                 n_jobs=params.db_n_jobs)
 
-    labels = db.fit_predict(vectors_np)
+    labels = db.fit_predict(vectors)
     print("Number of estimated clusters using DBSCAN: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
     print("Noise: %d\n" %  len([i for i in labels if i == -1]))
 
@@ -39,13 +46,16 @@ def dbscan(params, vectors_np):
         json.dump(labels.tolist(), f)
 
 
-# cluster NumPy arrays of sentence vectors using OPTICS
-def optics(params, vectors_np):
+def optics(params):
+    '''
+    Cluster arrays using OPTICS.
+    :params params.embedding_file: 2D NumPy arrays
+    '''
 
-    # compute clusters
+    vectors = np.load(params.embedding_file)
+
     op = OPTICS(min_samples=params.op_min_samples)
-    labels = op.fit_predict(vectors_np)
-    ids = op.core_sample_indices_
+    labels = op.fit_predict(vectors)
     print("Number of estimated clusters using OPTICS: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
     print("Noise: %d\n" % len([i for i in labels if i == -1]))
 
@@ -54,16 +64,24 @@ def optics(params, vectors_np):
         json.dump(labels.tolist(), f)
 
 
-# project NumPy arrays of sentence vectors into 3D using TSNE
-def tsne(params, vectors_np):
+def kmeans(params):
+    '''
+    Cluster arrays using KMeans.
+    :params params.embedding_file: 2D NumPy arrays
+    '''
 
-    # use t-SNE
-    ts = TSNE(n_components=params.ts_n_components,
-              perplexity=params.ts_perplexity,
-              learning_rate=params.ts_learning_rate,
-              n_iter=params.ts_n_iter)
+    vectors = np.load(params.embedding_file)
 
-    vectors_ts = ts.fit_transform(vectors_np)
+    km = KMeans(n_clusters=km_n_clusters,
+                n_init=km_n_init,
+                max_iter=km_max_iter,
+                n_jobs=km_n_jobs,
+                algorithm=km_algorithm)
 
-    np.save(params.ts_embed_file, vectors_ts)
-    return vectors_ts
+    labels = km.fit_predict(vectors)
+    print("Number of estimated clusters using KMeans: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
+    print("Noise: %d\n" % len([i for i in labels if i == -1]))
+
+    # write list of labels to output
+    with open(params.km_labels_file, 'w') as f:
+        json.dump(labels.tolist(), f)

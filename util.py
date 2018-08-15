@@ -3,8 +3,14 @@ import numpy as np
 from allennlp.commands.elmo import ElmoEmbedder
 from tqdm import *
 
-# concatenates word vectors together
-def concat_word_vecs(sentence_vec, max_len):
+
+def concat_word_vecs(sentence_vec, max_len=50):
+    '''
+    Concatenate word embeddings together to get sentence/transcription vector.
+    :sentence_vec: 2D Tensor of word embeddings
+    :max_len: length of each sentence to pad/truncate to
+    :return: a 1D Tensor for the sentence/transcription
+    '''
 
     # pad/truncate to same shape
     sentence_len = sentence_vec.get_shape().as_list()[0]
@@ -16,8 +22,13 @@ def concat_word_vecs(sentence_vec, max_len):
     
     return tf.concat([sentence_vec[i] for i in range(max_len)], axis=0)
 
-# returns dictionary of GloVe word embeddings
+
 def load_glove(glove_file):
+    '''
+    Create a dictionary for GloVe lookup.
+    :glove_file: location of GloVe text file
+    :return: a Python dictionary of GloVe word embeddings
+    '''
     with open(glove_file, 'r', encoding="utf-8") as f:
         word_dict = {}
         lines = f.read().splitlines()
@@ -28,10 +39,19 @@ def load_glove(glove_file):
             word_dict[word] = embedding
     return word_dict
 
-# returns a NumPy array of sentence vectors
-def embed(params, sentences):
 
-    # embed transcriptions
+def embed(params, sentences):
+    '''
+    Embed a list of sentences using ELMo or GloVe.
+    :params params.elmo: use ELMo
+    :params params.glove: use GloVe
+    :params params.concat_word_vecs: concatenate word vectors
+    :params params.sum_word_vecs: sum word vectors
+    :params params.avg_word_vecs: average word vectors
+    :sentences: list of tokenized sentences/transcriptions to embed
+    :return: a Tensor of Tensors (sentence/transcription embeddings)
+    '''
+
     embeddings = []
 
     # embed with ELMo
@@ -66,14 +86,9 @@ def embed(params, sentences):
                                    else word_dict['OOV']
                                    for word in sentences[i]
                                   ])
-            for i in range(embeddings.get_shape().as_list()[0]):
-                if embeddings[i] == word_dict['OOV']:
-                    oov += 1
             reduce1.append(embeddings)
-        print("Number of OOV words: %d\n" % oov)
 
 
-    # reduce sentence matrix, per sentence
     reduce2 = []
 
     # concatenate word vectors
@@ -86,15 +101,22 @@ def embed(params, sentences):
         for sentence in reduce1:
             reduce2.append(tf.reduce_sum(sentence, axis=0))
 
+    # average word vectors
+    elif params.avg_word_vecs:
+        for sentence in reduce1:
+            reduce2.append(tf.reduce_mean(sentence, axis=0))
+
 
     # convert to a tensor of tensors
-    all = tf.stack([x for x in reduce2])
-    print(all.get_shape().as_list())
-    return all
+    return tf.stack([x for x in reduce2])
 
 
-# cleans and tokenizes transcription file, already separated by line
 def tokenize(params):
+    '''
+    Tokenize a file per line by space ' '.
+    :params params.sentence_file: file to be tokenized
+    :return: list of lists of tokens (per sentence/transcription)
+    '''
 
     with open(params.sentence_file, 'r') as f:
 
