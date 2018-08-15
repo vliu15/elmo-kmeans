@@ -31,7 +31,7 @@ tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
 ms_labels_file = os.path.join(output_dir, "ms_labels.json")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
 op_labels_file = os.path.join(output_dir, "op_labels.json")
-km_labels_file = os.path.join(os.getcwd(), "km_labels.json")
+km_labels_file = os.path.join(output_dir, "km_labels.json")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
 
