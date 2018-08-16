@@ -20,7 +20,7 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-output_dir = os.path.join(os.getcwd(), "output", "l3-sum")
+output_dir = os.path.join(os.getcwd(), "output", "l3-avg")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 group_dir = os.path.join(output_dir, "groups")
