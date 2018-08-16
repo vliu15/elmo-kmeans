@@ -23,6 +23,9 @@ glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 output_dir = os.path.join(os.getcwd(), "output", "l3-sum")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
+group_dir = os.path.join(output_dir, "groups")
+if not os.path.exists(group_dir):
+    os.makedirs(group_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
 # embedding_file = os.path.join(output_dir, "embeddings.npy")
 embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
@@ -31,13 +34,24 @@ tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
 ms_labels_file = os.path.join(output_dir, "ms_labels.json")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
 op_labels_file = os.path.join(output_dir, "op_labels.json")
-km_labels_file = os.path.join(output_dir, "topic_labels.json")
+km_labels_file = os.path.join(output_dir, "km_labels.json")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
-
 
 # flags for adjusting parameters at runtime
 flags = tf.flags
 
+# files
+flags.DEFINE_string("sentence_file", sentence_file, "file for embedding")
+flags.DEFINE_string("embedding_file", embedding_file, "file for sentence embeddings")
+flags.DEFINE_string("sif_file", sif_file, "file for SIF embeddings")
+flags.DEFINE_string("tsne_file", tsne_file, "file for t-SNE embeddings")
+flags.DEFINE_string("ms_labels_file", ms_labels_file, "file for MeanShift cluster labels")
+flags.DEFINE_string("db_labels_file", db_labels_file, "file for DBSCAN cluster labels")
+flags.DEFINE_string("op_labels_file", op_labels_file, "file for OPTICS cluster labels")
+flags.DEFINE_string("km_labels_file", km_labels_file, "file for KMeans cluster labels")
+flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
+
+# mode
 flags.DEFINE_string("mode", "embed", "embed, sif, tsne, cluster, metadata, tensorboard, analyze")
 
 # embedding
@@ -94,18 +108,8 @@ flags.DEFINE_string("meta_labels_file", km_labels_file, "labels file to be used 
 flags.DEFINE_string("log_dir", output_dir, "log directory for TensorBoard")
 
 # analyze
-flags.DEFINE_string("write_dir", os.path.join(output_dir, "groups"), "directory for writing groups")
-
-# files
-flags.DEFINE_string("sentence_file", sentence_file, "file for embedding")
-flags.DEFINE_string("embedding_file", embedding_file, "file for sentence embeddings")
-flags.DEFINE_string("sif_file", sif_file, "file for SIF embeddings")
-flags.DEFINE_string("tsne_file", tsne_file, "file for t-SNE embeddings")
-flags.DEFINE_string("ms_labels_file", ms_labels_file, "file for MeanShift cluster labels")
-flags.DEFINE_string("db_labels_file", db_labels_file, "file for DBSCAN cluster labels")
-flags.DEFINE_string("op_labels_file", op_labels_file, "file for OPTICS cluster labels")
-flags.DEFINE_string("km_labels_file", km_labels_file, "file for KMeans cluster labels")
-flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
+flags.DEFINE_string("group_dir", os.path.join(output_dir, "groups"), "directory for writing groups")
+flags.DEFINE_string("group_labels_file", km_labels_file, "labels file to write sentence groups")
 
 params = flags.FLAGS
 
