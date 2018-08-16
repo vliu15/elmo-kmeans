@@ -79,7 +79,6 @@ def embed(params, sentences):
     elif params.glove:
         word_dict = load_glove(params.glove_word_file)
         reduce1 = []
-        oov = 0
         for i in tqdm(range(len(sentences))):
             embeddings = tf.stack([word_dict[word]
                                    if word in word_dict.keys()
@@ -108,7 +107,7 @@ def embed(params, sentences):
 
 
     # convert to a tensor of tensors
-    return tf.stack([x for x in reduce2])
+    return tf.stack([x for x in reduce1])
 
 
 def tokenize(params):
