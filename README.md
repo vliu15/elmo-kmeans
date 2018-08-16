@@ -46,6 +46,7 @@ Run `python3 main.py` with the following options:
  * `--mode cluster` to cluster embeddings
  * `--mode metadata` to write metadata file
  * `--mode tensorboard` to create TensorBoard files
+ * `--mode analyze` to write clustered sentences to files
 
 A couple auxiliary files:
  * Run `sh clean.sh` to convert transcriptions to lower case and remove stop words
