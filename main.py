@@ -7,7 +7,7 @@ from tsne import tsne
 from cluster import meanshift, dbscan, optics, kmeans
 from meta import write_meta
 from tensorboard import tensorboard
-from analyze import write_groups
+from analyze import write_groups, remove_groups
 
 import argparse, os
 
@@ -23,18 +23,15 @@ glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 output_dir = os.path.join(os.getcwd(), "output", "l3-avg")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-group_dir = os.path.join(output_dir, "groups")
-if not os.path.exists(group_dir):
-    os.makedirs(group_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
 # embedding_file = os.path.join(output_dir, "embeddings.npy")
-embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
+embedding_file = os.path.join(output_dir, "embeddings_ts.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
 ms_labels_file = os.path.join(output_dir, "ms_labels.json")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
 op_labels_file = os.path.join(output_dir, "op_labels.json")
-km_labels_file = os.path.join(output_dir, "km_labels.json")
+km_labels_file = os.path.join(output_dir, "km_labels-100.json")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
 # flags for adjusting parameters at runtime
@@ -76,7 +73,7 @@ flags.DEFINE_integer("sif_rmpc", 1, "number of principal components to remove")
 flags.DEFINE_integer("ts_n_components", 3, "n_components in TSNE function")
 flags.DEFINE_integer("ts_perplexity", 50, "perplexity n TSNE function")
 flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
-flags.DEFINE_integer("ts_n_iter", 5000," n_iter in TSNE function")
+flags.DEFINE_integer("ts_n_iter", 7500," n_iter in TSNE function")
 
 # clustering
 flags.DEFINE_boolean("meanshift", False, "use MeanShift clustering")
@@ -93,7 +90,7 @@ flags.DEFINE_boolean("optics", False, "use OPTICS clustering")
 flags.DEFINE_integer("op_min_samples", 100, "min_samples in OPTICS function")
 
 flags.DEFINE_boolean("kmeans", True, "use KMeans clustering")
-flags.DEFINE_integer("km_n_clusters", 50, "n_clusters in KMeans function")
+flags.DEFINE_integer("km_n_clusters", 100, "n_clusters in KMeans function")
 flags.DEFINE_integer("km_n_init", 10, "n_init in KMeans function")
 flags.DEFINE_integer("km_max_iter", 300, "max_iter in KMeans function")
 flags.DEFINE_boolean("km_verbose", True, "verbose in KMeans function")
@@ -105,11 +102,14 @@ flags.DEFINE_boolean("meta_labels", True, "use labels in metadata")
 flags.DEFINE_string("meta_labels_file", km_labels_file, "labels file to be used in metadata")
 
 # tensorboard
-flags.DEFINE_string("log_dir", output_dir, "log directory for TensorBoard")
+flags.DEFINE_string("log_dir", os.path.join(output_dir, "tensorboard"), "log directory for TensorBoard")
 
 # analyze
-flags.DEFINE_string("group_dir", os.path.join(output_dir, "groups"), "directory for writing groups")
 flags.DEFINE_string("group_labels_file", km_labels_file, "labels file to write sentence groups")
+flags.DEFINE_boolean("write_groups", False, "write clustered sentences to files")
+flags.DEFINE_string("group_dir", os.path.join(output_dir, "groups"), "directory for clustered sentences")
+flags.DEFINE_boolean("remove_groups", True, "remove specificed clusters from sentences")
+flags.DEFINE_string("trim_dir", os.path.join(output_dir, "trimmed"), "directory for trimmed version")
 
 params = flags.FLAGS
 
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     if params.mode == "embed":
 
         # tokenize transcriptions
-        # tokenized = tokenize(params)
+        tokenized = tokenize(params)
 
         with open(params.sentence_file, 'r') as f:
             tokenized = f.read().splitlines()
@@ -157,12 +157,19 @@ if __name__ == "__main__":
 
         write_meta(params)
 
+
     if params.mode == "tensorboard":
 
         # set up tensorboard projector
         tensorboard(params)
 
+
     if params.mode == "analyze":
 
         # write groups of sentences from clusters
-        write_groups(params)
+        if params.write_groups:
+            write_groups(params)
+
+        # remove clusters of sentences
+        if params.remove_groups:
+            remove_groups(params)
