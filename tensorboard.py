@@ -4,7 +4,15 @@ import numpy as np
 import os
 
 def tensorboard(params):
+    '''
+    Create a TensorBoard instance for embedding visualization.
+    :params.log_dir: directory for output logs
+    :params.embedding_file: file for embeddings
+    :params.metadata_file: file for metadata
+    '''
     LOG_DIR = params.log_dir
+    if not os.exists(LOG_DIR):
+        os.makedirs(LOG_DIR)
 
     tmp = np.load(params.embedding_file)
     embedding_var = tf.Variable(tmp, trainable=False, name="embeddings")
