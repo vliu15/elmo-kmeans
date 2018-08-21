@@ -11,7 +11,7 @@ def tensorboard(params):
     :params.metadata_file: file for metadata
     '''
     LOG_DIR = params.log_dir
-    if not os.exists(LOG_DIR):
+    if not os.path.exists(LOG_DIR):
         os.makedirs(LOG_DIR)
 
     tmp = np.load(params.embedding_file)
