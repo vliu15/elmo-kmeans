@@ -3,7 +3,7 @@ import numpy as np
 
 from util import embed, tokenize
 from sif import sif
-from tsne import tsne
+from project import pca, tsne
 from cluster import dbscan, kmeans
 from meta import write_meta
 from tensorboard import tensorboard
@@ -27,6 +27,7 @@ sentence_file = os.path.join(output_dir, "sentences.txt")
 # embedding_file = os.path.join(output_dir, "embeddings.npy")
 embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
+pca_file = os.path.join(output_dir, "embeddings_pc.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
 km_labels_file = os.path.join(output_dir, "km_labels-25.json")
@@ -47,9 +48,9 @@ flags.DEFINE_string("km_opt_file", km_opt_file, "file for KMeans cluster-inertia
 flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
 
 # mode
-flags.DEFINE_string("mode", "embed", "embed, sif, tsne, cluster, metadata, tensorboard, analyze")
+flags.DEFINE_string("mode", "embed", "embed, sif, project, cluster, metadata, tensorboard, analyze")
 
-# embedding
+# embed
 flags.DEFINE_boolean("elmo", True, "use ELMo for embeddings")
 flags.DEFINE_string("elmo_options_file", elmo_options_file, "options file for ELMo embedding")
 flags.DEFINE_string("elmo_weights_file", elmo_weights_file, "weights file for ELMo embedding")
@@ -67,13 +68,17 @@ flags.DEFINE_integer("max_transcript_len", 30, "if concatenating, length to pad/
 # sif
 flags.DEFINE_integer("sif_rmpc", 1, "number of principal components to remove")
 
-# tsne
+# project
+flags.DEFINE_boolean("pca", False, "use pca for visualization")
+flags.DEFINE_integer("pc_n_components", 3, "n_components in PCA function")
+
+flags.DEFINE_boolean("tsne", True, "us tsne for visualization")
 flags.DEFINE_integer("ts_n_components", 3, "n_components in TSNE function")
 flags.DEFINE_integer("ts_perplexity", 50, "perplexity n TSNE function")
 flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
-flags.DEFINE_integer("ts_n_iter", 7500," n_iter in TSNE function")
+flags.DEFINE_integer("ts_n_iter", 5000," n_iter in TSNE function")
 
-# clustering
+# cluster
 flags.DEFINE_boolean("dbscan", False, "use DBSCAN clustering")
 flags.DEFINE_float("db_eps", 1, "eps in DBSCAN function")
 flags.DEFINE_integer("db_min_samples", 10, "min_samples in DBSCAN function")
@@ -131,8 +136,11 @@ if __name__ == "__main__":
     if params.mode == "sif":
         sif(params)
 
-    if params.mode == "tsne":
-       tsne(params)
+    if params.mode == "project":
+        if params.pca:
+            pca(params)
+        if params.tsne:
+            tsne(params)
 
     if params.mode == "cluster":
         if params.dbscan:
