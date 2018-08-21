@@ -3,11 +3,11 @@ import numpy as np
 
 from util import embed, tokenize
 from sif import sif
-from project import pca, tsne
 from cluster import dbscan, kmeans
+from analyze import write_groups, remove_groups
+from project import pca, tsne
 from meta import write_meta
 from tensorboard import tensorboard
-from analyze import write_groups, remove_groups
 
 import argparse, os
 
@@ -48,7 +48,7 @@ flags.DEFINE_string("km_opt_file", km_opt_file, "file for KMeans cluster-inertia
 flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
 
 # mode
-flags.DEFINE_string("mode", "embed", "embed, sif, project, cluster, metadata, tensorboard, analyze")
+flags.DEFINE_string("mode", "embed", "embed, sif, cluster, analyze, project, metadata, tensorboard")
 
 # embed
 flags.DEFINE_boolean("elmo", True, "use ELMo for embeddings")
@@ -67,16 +67,6 @@ flags.DEFINE_integer("max_transcript_len", 30, "if concatenating, length to pad/
 
 # sif
 flags.DEFINE_integer("sif_rmpc", 1, "number of principal components to remove")
-
-# project
-flags.DEFINE_boolean("pca", False, "use pca for visualization")
-flags.DEFINE_integer("pc_n_components", 3, "n_components in PCA function")
-
-flags.DEFINE_boolean("tsne", True, "us tsne for visualization")
-flags.DEFINE_integer("ts_n_components", 3, "n_components in TSNE function")
-flags.DEFINE_integer("ts_perplexity", 50, "perplexity n TSNE function")
-flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
-flags.DEFINE_integer("ts_n_iter", 5000," n_iter in TSNE function")
 
 # cluster
 flags.DEFINE_boolean("dbscan", False, "use DBSCAN clustering")
@@ -99,19 +89,29 @@ flags.DEFINE_integer("min_k", 5, "minimum k to try")
 flags.DEFINE_integer("max_k", 155, "maximum k to try")
 flags.DEFINE_integer("n_k", 15, "number of k's to try")
 
-# metadata
-flags.DEFINE_boolean("meta_labels", True, "use labels in metadata")
-flags.DEFINE_string("meta_labels_file", km_labels_file, "labels file to be used in metadata")
-
-# tensorboard
-flags.DEFINE_string("log_dir", os.path.join(output_dir, "tensorboard"), "log directory for TensorBoard")
-
 # analyze
 flags.DEFINE_string("group_labels_file", km_labels_file, "labels file to write sentence groups")
 flags.DEFINE_boolean("write_groups", True, "write clustered sentences to files")
 flags.DEFINE_string("group_dir", os.path.join(output_dir, "groups"), "directory for clustered sentences")
 flags.DEFINE_boolean("remove_groups", False, "remove specificed clusters from sentences")
 flags.DEFINE_string("trim_dir", os.path.join(output_dir, "trimmed"), "directory for trimmed version")
+
+# project
+flags.DEFINE_boolean("pca", False, "use pca for visualization")
+flags.DEFINE_integer("pc_n_components", 3, "n_components in PCA function")
+
+flags.DEFINE_boolean("tsne", True, "us tsne for visualization")
+flags.DEFINE_integer("ts_n_components", 3, "n_components in TSNE function")
+flags.DEFINE_integer("ts_perplexity", 50, "perplexity n TSNE function")
+flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
+flags.DEFINE_integer("ts_n_iter", 5000," n_iter in TSNE function")
+
+# metadata
+flags.DEFINE_boolean("meta_labels", True, "use labels in metadata")
+flags.DEFINE_string("meta_labels_file", km_labels_file, "labels file to be used in metadata")
+
+# tensorboard
+flags.DEFINE_string("log_dir", os.path.join(output_dir, "tensorboard"), "log directory for TensorBoard")
 
 params = flags.FLAGS
 
@@ -136,17 +136,23 @@ if __name__ == "__main__":
     if params.mode == "sif":
         sif(params)
 
-    if params.mode == "project":
-        if params.pca:
-            pca(params)
-        if params.tsne:
-            tsne(params)
-
     if params.mode == "cluster":
         if params.dbscan:
             dbscan(params)
         if params.kmeans:
             kmeans(params)
+
+    if params.mode == "analyze":
+        if params.write_groups:
+            write_groups(params)
+        if params.remove_groups:
+            remove_groups(params)
+
+    if params.mode == "project":
+        if params.pca:
+            pca(params)
+        if params.tsne:
+            tsne(params)
 
     if params.mode == "metadata":
         if not params.meta_labels:
@@ -155,9 +161,3 @@ if __name__ == "__main__":
 
     if params.mode == "tensorboard":
         tensorboard(params)
-
-    if params.mode == "analyze":
-        if params.write_groups:
-            write_groups(params)
-        if params.remove_groups:
-            remove_groups(params)

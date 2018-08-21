@@ -42,11 +42,11 @@ To generate sentence embeddings, make sure that the `sentences.txt` file is form
 Run `python3 main.py` with the following options:
  * `--mode embed` to embed the sentence file
  * `--mode sif` to enhance sentence embeddings with SIF
- * `--mode project` to reduce dimensionality for visualization
  * `--mode cluster` to cluster embeddings
+ * `--mode analyze` to write clustered sentences to files
+ * `--mode project` to reduce dimensionality for visualization
  * `--mode metadata` to write metadata file
  * `--mode tensorboard` to create TensorBoard files
- * `--mode analyze` to write clustered sentences to files
 
 A couple auxiliary files:
  * Run `sh clean.sh` to convert transcriptions to lower case and remove stop words
