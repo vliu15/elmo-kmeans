@@ -43,11 +43,11 @@ def load_glove(glove_file):
 def embed(params, sentences):
     '''
     Embed a list of sentences using ELMo or GloVe.
-    :params params.elmo: use ELMo
-    :params params.glove: use GloVe
-    :params params.concat_word_vecs: concatenate word vectors
-    :params params.sum_word_vecs: sum word vectors
-    :params params.avg_word_vecs: average word vectors
+    :params.elmo: use ELMo
+    :params.glove: use GloVe
+    :params.concat_word_vecs: concatenate word vectors
+    :params.sum_word_vecs: sum word vectors
+    :params.avg_word_vecs: average word vectors
     :sentences: list of tokenized sentences/transcriptions to embed
     :return: a Tensor of Tensors (sentence/transcription embeddings)
     '''
@@ -65,12 +65,12 @@ def embed(params, sentences):
 
         # average
         if params.bilm_layer_index == -1:
-            for sentence in embeddings:
+            for sentence in tqdm(embeddings):
                 reduce1.append(tf.reduce_mean(sentence, axis=0))
 
         # bilm layer
         elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
-            for sentence in embeddings:
+            for sentence in tqdm(embeddings):
                 bilm_layer = tf.slice(sentence, [params.bilm_layer_index, 0, 0], [1, -1, -1])
                 bilm_layer = tf.squeeze(bilm_layer, axis=0)
                 reduce1.append(bilm_layer) # shape: [n, 1024]
@@ -92,17 +92,17 @@ def embed(params, sentences):
 
     # concatenate word vectors
     if params.concat_word_vecs:
-        for sentence in reduce1:
+        for sentence in tqdm(reduce1):
             reduce2.append(concat_word_vecs(sentence, params.max_transcript_len))
 
     # sum word vectors
     elif params.sum_word_vecs:
-        for sentence in reduce1:
+        for sentence in tqdm(reduce1):
             reduce2.append(tf.reduce_sum(sentence, axis=0))
 
     # average word vectors
     elif params.avg_word_vecs:
-        for sentence in reduce1:
+        for sentence in tqdm(reduce1):
             reduce2.append(tf.reduce_mean(sentence, axis=0))
 
 
@@ -113,7 +113,7 @@ def embed(params, sentences):
 def tokenize(params):
     '''
     Tokenize a file per line by space ' '.
-    :params params.sentence_file: file to be tokenized
+    :params.sentence_file: file to be tokenized
     :return: list of lists of tokens (per sentence/transcription)
     '''
 
