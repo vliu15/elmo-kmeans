@@ -4,7 +4,7 @@ import numpy as np
 from util import embed, tokenize
 from sif import sif
 from tsne import tsne
-from cluster import meanshift, dbscan, optics, kmeans
+from cluster import dbscan, kmeans
 from meta import write_meta
 from tensorboard import tensorboard
 from analyze import write_groups, remove_groups
@@ -24,14 +24,11 @@ output_dir = os.path.join(os.getcwd(), "output", "l3-avg")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
-# embedding_file = os.path.join(output_dir, "embeddings.npy")
-embedding_file = os.path.join(output_dir, "embeddings_ts.npy")
+embedding_file = os.path.join(output_dir, "embeddings.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
-ms_labels_file = os.path.join(output_dir, "ms_labels.json")
 db_labels_file = os.path.join(output_dir, "db_labels.json")
-op_labels_file = os.path.join(output_dir, "op_labels.json")
-km_labels_file = os.path.join(output_dir, "km_labels-100.json")
+km_labels_file = os.path.join(output_dir, "km_labels.json")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
 # flags for adjusting parameters at runtime
@@ -42,9 +39,7 @@ flags.DEFINE_string("sentence_file", sentence_file, "file for embedding")
 flags.DEFINE_string("embedding_file", embedding_file, "file for sentence embeddings")
 flags.DEFINE_string("sif_file", sif_file, "file for SIF embeddings")
 flags.DEFINE_string("tsne_file", tsne_file, "file for t-SNE embeddings")
-flags.DEFINE_string("ms_labels_file", ms_labels_file, "file for MeanShift cluster labels")
 flags.DEFINE_string("db_labels_file", db_labels_file, "file for DBSCAN cluster labels")
-flags.DEFINE_string("op_labels_file", op_labels_file, "file for OPTICS cluster labels")
 flags.DEFINE_string("km_labels_file", km_labels_file, "file for KMeans cluster labels")
 flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
 
@@ -76,18 +71,12 @@ flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
 flags.DEFINE_integer("ts_n_iter", 7500," n_iter in TSNE function")
 
 # clustering
-flags.DEFINE_boolean("meanshift", False, "use MeanShift clustering")
-flags.DEFINE_boolean("ms_bin_seeding", True, "bin_seeding in MeanShift function")
-
 flags.DEFINE_boolean("dbscan", False, "use DBSCAN clustering")
 flags.DEFINE_float("db_eps", 1, "eps in DBSCAN function")
 flags.DEFINE_integer("db_min_samples", 10, "min_samples in DBSCAN function")
 flags.DEFINE_string("db_metric", "euclidean", "metric in DBSCAN function")
 flags.DEFINE_string("db_algorithm", "brute", "algorithm in DBSCAN function")
 flags.DEFINE_integer("db_n_jobs", -1, "n_jobs in DBSCAN function")
-
-flags.DEFINE_boolean("optics", False, "use OPTICS clustering")
-flags.DEFINE_integer("op_min_samples", 100, "min_samples in OPTICS function")
 
 flags.DEFINE_boolean("kmeans", True, "use KMeans clustering")
 flags.DEFINE_integer("km_n_clusters", 100, "n_clusters in KMeans function")
@@ -96,6 +85,10 @@ flags.DEFINE_integer("km_max_iter", 300, "max_iter in KMeans function")
 flags.DEFINE_boolean("km_verbose", True, "verbose in KMeans function")
 flags.DEFINE_integer("km_n_jobs", -1, "n_jobs in KMeans function")
 flags.DEFINE_string("km_algorithm","auto", "algorithm in KMeans function")
+
+flags.DEFINE_boolean("km_opt", True, "find optimal k")
+flags.DEFINE_integer("min_k", 0, "minimum k to try")
+flags.DEFINE_integer("max_k", 200, "maximum k to try")
 
 # metadata
 flags.DEFINE_boolean("meta_labels", True, "use labels in metadata")
@@ -140,12 +133,8 @@ if __name__ == "__main__":
        tsne(params)
 
     if params.mode == "cluster":
-        if params.meanshift:
-            meanshift(params)
         if params.dbscan:
             dbscan(params)
-        if params.optics:
-            optics(params)
         if params.kmeans:
             kmeans(params)
 

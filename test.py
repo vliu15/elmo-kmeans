@@ -1,0 +1,1 @@
+from wmd import WMD

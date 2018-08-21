@@ -1,26 +1,6 @@
 import numpy as np
 import json
-from sklearn.cluster import MeanShift, estimate_bandwidth, DBSCAN, KMeans
-
-
-def meanshift(params):
-    '''
-    Cluster arrays using MeanShift.
-    :params params.embedding_file: 2D NumPy arrays
-    '''
-
-    vectors = np.load(params.embedding_file)
-
-    # bandwidth = estimate_bandwidth(vectors)
-    ms = MeanShift(bin_seeding=params.ms_bin_seeding)
-
-    labels = ms.fit_predict(vectors)
-    print("Number of estimated clusters using MeanShift: %d\n" % len(clusters))
-    print("Noise: %d\n" %  len([i for i in labels if i == -1]))
-
-    # write list of labels to output
-    with open(params.ms_labels_file, 'w') as f:
-        json.dump(labels.tolist(), f)
+from sklearn.cluster import DBSCAN, KMeans
 
 
 def dbscan(params):
@@ -43,24 +23,6 @@ def dbscan(params):
 
     # write list of labels to output
     with open(params.db_labels_file, 'w') as f:
-        json.dump(labels.tolist(), f)
-
-
-def optics(params):
-    '''
-    Cluster arrays using OPTICS.
-    :params params.embedding_file: 2D NumPy arrays
-    '''
-
-    vectors = np.load(params.embedding_file)
-
-    op = OPTICS(min_samples=params.op_min_samples)
-    labels = op.fit_predict(vectors)
-    print("Number of estimated clusters using OPTICS: %d\n" % (len(set(labels)) - (1 if -1 in labels else 0)))
-    print("Noise: %d\n" % len([i for i in labels if i == -1]))
-
-    # write list of labels to output
-    with open(params.op_labels_file, 'w') as f:
         json.dump(labels.tolist(), f)
 
 
