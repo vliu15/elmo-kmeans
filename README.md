@@ -1,6 +1,7 @@
 # ELMo Embeddings for Medica transcriptions
 To convert Optum's Medica speech transcriptions to ELMo embeddings per sentence for clustering.
 
+
 ## Requirements:
  * Python3 (>=3.6 for AllenNLP)
  * AllenNLP
@@ -9,6 +10,7 @@ To convert Optum's Medica speech transcriptions to ELMo embeddings per sentence 
  * SKLearn (for clustering)
  * Torch (for AllenNLP)
  * SciPy (for SKLearn stop words)
+
 
 ## Install
 To install the necessary dependencies:
@@ -23,12 +25,6 @@ pip3 install torch
 # pip3 install scipy
 ```
 
-Or to run inside a Docker container:
-```bash
-docker build -t elmo-embeddings .
-docker exec -i -t elmo-embeddings /bin/bash
-python3.6 main.py
-```
 
 ## Usage
 To generate sentence embeddings, make sure that the `sentences.txt` file is formatted as such:
@@ -50,6 +46,24 @@ Run `python3 main.py` with the following options:
 
 A couple auxiliary files:
  * Run `sh clean.sh` to convert transcriptions to lower case and remove stop words
+
+
+## Run
+To run inside a Docker container:
+
+```bash
+docker build -t elmo-embeddings .
+docker exec -i -t elmo-embeddings /bin/bash
+python3.6 main.py
+```
+
+To run on LSF:
+
+```bash
+bsub -o output.txt \
+     -env LSB_CONTAINER_IMAGE=docker.optum.com/dl_lab/elmo:tf-gpu \
+     sh -c "cd /data/elmo-embedding && python3.6 main.py --mode <mode>"
+```
 
 
 ## Outputs
