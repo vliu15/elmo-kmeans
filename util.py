@@ -56,19 +56,15 @@ def embed(params, sentences):
 
     # embed with ELMo
     if params.elmo:
-        elmo = ElmoEmbedder(params.elmo_options_file, params.elmo_weights_file)
+        elmo = ElmoEmbedder(params.elmo_options_file, params.elmo_weights_file, params.elmo_cuda_device)
         for i in tqdm(range(len(sentences))):
             embeddings.append(elmo.embed_sentence(sentences[i])) # shape: [3, n, 1024]
 
         # reduce word vectors: 3 -> 1
         reduce1 = []
-
-        # average
         if params.bilm_layer_index == -1:
             for sentence in tqdm(embeddings):
                 reduce1.append(tf.reduce_mean(sentence, axis=0))
-
-        # bilm layer
         elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
             for sentence in tqdm(embeddings):
                 bilm_layer = tf.slice(sentence, [params.bilm_layer_index, 0, 0], [1, -1, -1])
@@ -87,24 +83,20 @@ def embed(params, sentences):
                                   ])
             reduce1.append(embeddings)
 
-
+    # reduce sentence vectors -> 1
     reduce2 = []
-
-    # concatenate word vectors
-    if params.concat_word_vecs:
+    if params.avg_word_vecs:
+        for sentence in tqdm(reduce1):
+            reduce2.append(tf.reduce_mean(sentence, axis=0))
+    elif params.max_pool_word_vecs:
+        for sentence in tqdm(reduce1):
+            reduce2.append(tf.reduce_max(sentence, axis=0))
+    elif params.concat_word_vecs:
         for sentence in tqdm(reduce1):
             reduce2.append(concat_word_vecs(sentence, params.max_transcript_len))
-
-    # sum word vectors
     elif params.sum_word_vecs:
         for sentence in tqdm(reduce1):
             reduce2.append(tf.reduce_sum(sentence, axis=0))
-
-    # average word vectors
-    elif params.avg_word_vecs:
-        for sentence in tqdm(reduce1):
-            reduce2.append(tf.reduce_mean(sentence, axis=0))
-
 
     # convert to a tensor of tensors
     return tf.stack([x for x in reduce1])

@@ -4,7 +4,6 @@ import numpy as np
 from util import embed, tokenize
 from sif import sif
 from cluster import kmeans, opt_k, hierarch_k
-from analyze import write_groups, remove_groups
 from project import pca, tsne
 from meta import write_meta
 from tensorboard import tensorboard
@@ -20,7 +19,7 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-output_dir = os.path.join(os.getcwd(), "output", "l3-avg", "trimmed" )
+output_dir = os.path.join(os.getcwd(), "output", "l3-avg", "trimmed")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
@@ -29,7 +28,7 @@ embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 pca_file = os.path.join(output_dir, "embeddings_pc.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
-km_labels_file = os.path.join(output_dir, "km_labels-25.json")
+km_labels_file = os.path.join(output_dir, "km_labels-10.json")
 km_opt_file = os.path.join(output_dir, "km_opt.csv")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
@@ -52,7 +51,7 @@ flags.DEFINE_string("mode", "embed", "embed, sif, cluster, analyze, project, met
 flags.DEFINE_boolean("elmo", True, "use ELMo for embeddings")
 flags.DEFINE_string("elmo_options_file", elmo_options_file, "options file for ELMo embedding")
 flags.DEFINE_string("elmo_weights_file", elmo_weights_file, "weights file for ELMo embedding")
-flags.DEFINE_integer("elmo_cuda_device", -1, "GPU device to run on")
+flags.DEFINE_integer("elmo_cuda_device", 1, "GPU device to run on")
 
 flags.DEFINE_boolean("glove", False, "use GloVe for embeddings")
 flags.DEFINE_string("glove_word_file", glove_word_file, "word file for GloVe embedding")
@@ -69,8 +68,9 @@ flags.DEFINE_integer("max_transcript_len", 30, "if concatenating, length to pad/
 flags.DEFINE_integer("sif_rmpc", 1, "number of principal components to remove")
 
 # cluster
-flags.DEFINE_boolean("kmeans", True, "use KMeans clustering")
-flags.DEFINE_integer("n_clusters", 25, "n_clusters in KMeans function")
+flags.DEFINE_boolean("kmeans", False, "use KMeans clustering")
+flags.DEFINE_string("kmeans_dir", os.path.join(output_dir, "kmeans"), "output file for KMeans clusters")
+flags.DEFINE_integer("n_clusters", 10, "n_clusters in KMeans function")
 flags.DEFINE_integer("n_init", 10, "n_init in KMeans function")
 flags.DEFINE_integer("max_iter", 300, "max_iter in KMeans function")
 flags.DEFINE_boolean("verbose", False, "verbose in KMeans function")
@@ -82,16 +82,10 @@ flags.DEFINE_integer("min_k", 10, "minimum k to try")
 flags.DEFINE_integer("max_k", 160, "maximum k to try")
 flags.DEFINE_integer("n_k", 15, "number of k's to try")
 
-flags.DEFINE_boolean("hierarch_k", False, "compute kmeans hierarchically")
+flags.DEFINE_boolean("hierarch_k", True, "compute kmeans hierarchically")
+flags.DEFINE_string("hierarch_dir", os.path.join(output_dir, "hierarchy"), "directory for hierarchy clusters")
 flags.DEFINE_integer("split_size", 2, "number of clusters at each level")
-flags.DEFINE_integer("n_iter", 7, "number of levels of hierarchy")
-
-# analyze
-flags.DEFINE_string("group_labels_file", km_labels_file, "labels file to write sentence groups")
-flags.DEFINE_boolean("write_groups", True, "write clustered sentences to files")
-flags.DEFINE_string("group_dir", os.path.join(output_dir, "groups"), "directory for clustered sentences")
-flags.DEFINE_boolean("remove_groups", False, "remove specificed clusters from sentences")
-flags.DEFINE_string("trim_dir", os.path.join(output_dir, "trimmed"), "directory for trimmed version")
+flags.DEFINE_integer("n_iter", 6, "number of levels of hierarchy")
 
 # project
 flags.DEFINE_boolean("pca", False, "use pca for visualization")
@@ -142,12 +136,6 @@ if __name__ == "__main__":
             opt_k(params)
         if params.hierarch_k:
             hierarch_k(params)
-
-    if params.mode == "analyze":
-        if params.write_groups:
-            write_groups(params)
-        if params.remove_groups:
-            remove_groups(params)
 
     if params.mode == "project":
         if params.pca:
