@@ -39,21 +39,22 @@ Run `python3 main.py` with the following options:
  * `--mode embed` to embed the sentence file
  * `--mode sif` to enhance sentence embeddings with SIF
  * `--mode cluster` to cluster embeddings
- * `--mode analyze` to write clustered sentences to files
  * `--mode project` to reduce dimensionality for visualization
  * `--mode metadata` to write metadata file
  * `--mode tensorboard` to create TensorBoard files
 
+Adjust runtime flags in `main.py`
+
 A couple auxiliary files:
  * Run `sh clean.sh` to convert transcriptions to lower case and remove stop words
-
+ * Run `python3 remove.py` to remove clusters (specified in program)
 
 ## Run
 To run inside a Docker container:
 
 ```bash
 docker build -t elmo-embeddings .
-docker exec -i -t elmo-embeddings /bin/bash
+docker exec -it elmo-embeddings /bin/bash
 python3.6 main.py
 ```
 
