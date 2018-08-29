@@ -11,26 +11,27 @@ The goal of this pipeline is to take a dataset of voice transcriptions (obtained
 We combined deep learning and traditional NLP approaches to embed and cluster the transcriptions in the dataset. Below are details of each step that was implemented:
 
  1. Preprocessing the transcriptions:  
+
   After compiling all the transcriptions into one file, we decided to embed per sentence, so we split each transcription by periods and put these sentences into a text file, each on its own line. Then we tokenized each sentence into a list of words for embedding.
 
-  Approaches tried (to worse results):
+  Approaches tried (to worse results):  
     - Transcription level (vs. sentence level)
 
-  Approaches to try:
+  Approaches to try:  
     i. Removing stop words (vs. leaving sentences as is)
 
- 2. Word Embeddings:
+ 2. Word Embeddings:  
 
   We take the lists of words and feed them into ELMo, a pretrained model that creates deep contextual representations of words. ELMo generates 3 vectors per word (each with varying levels of contextual dependency). To preserve contextual sentiment, we use strictly the third vector of each word.
 
-  Approaches tried (to worse results):
+  Approaches tried (to worse results):  
     i.   GloVe (vs. ELMo)
     ii.  Averaging ELMo layers (vs. ELMo layer 3)
 
-  Approaches to try:
+  Approaches to try:  
     i. Trained ELMo (vs. Untrained ELMo)
 
-  Links:
+  Links:  
     i.  [ELMo Paper - AllenNLP](https://arxiv.org/pdf/1802.05365.pdf)
     ii. [ELMo GitHub - AllenNLP](https://github.com/allenai/allennlp/blob/master/tutorials/how_to/elmo.md)
     iii. [GloVe - Stanford NLP](https://nlp.stanford.edu/projects/glove/)
