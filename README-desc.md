@@ -11,6 +11,6 @@ The goal of this pipeline is to take a dataset of voice transcriptions (obtained
 We combined deep learning and traditional NLP approaches to embed and cluster the transcriptions in the dataset. Below are details of each step that was implemented:
 
  1. Preprocessing the transcriptions:
- :  After compiling all the transcriptions into one file, we decided to embed per sentence, so we split each transcription by periods and put these sentences into a text file, each on its own line. Then we tokenized each sentence into a list of words.
- :  Other approaches:
- :  :  
+    After compiling all the transcriptions into one file, we decided to embed per sentence, so we split each transcription by periods and put these sentences into a text file, each on its own line. Then we tokenized each sentence into a list of words.
+    Other approaches:
+         
