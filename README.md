@@ -29,7 +29,7 @@ pip3 install torch
 ## Usage
 To generate sentence embeddings, make sure that the `sentences.txt` file is formatted as such:
 
-```bash
+```
 <sentence/transcription>
 <sentence/transcription>
 # and so on...
@@ -78,14 +78,15 @@ An output folder will be created in the current directory containing:
 
 Other nested output folders:
  * `tensorboard`: for TensorBoard output logs
- * `groups`: for clustered sentences
+ * `kmeans`: for clustered sentences with kmeans
  * `trimmed`: for another copy of embeddings/sentences with specified clusters removed
+ * `hierarchy`: for clustered sentences with hierarchical kmeans
 
 
 ## Results
 On a dataset of 48k transcriptions / 137k sentences, the following process produced relatively defined clusters:
 
-```bash
+```
 ELMo -> layer 2 (per word) -> average (per sentence) -> SIF -> KMeans (k=100)
 t-SNE (7.5k iterations, for visualization)
 ```
