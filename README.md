@@ -83,19 +83,6 @@ Other nested output folders:
  * `hierarchy`: for clustered sentences with hierarchical kmeans
 
 
-## Results
-On a dataset of 48k transcriptions / 137k sentences, the following process produced relatively defined clusters:
-
-```
-ELMo -> layer 2 (per word) -> average (per sentence) -> SIF -> KMeans (k=100)
-t-SNE (7.5k iterations, for visualization)
-```
-
-To improve/fix:
- * Allow ELMo to use GPU for embedding (should just be installing PyTorch compatible with CUDA 9.0)
- * Achieve more defined clusters
-
-
 ## TO-DO
  - [x] Preprocess transcriptions
  - [x] Embed each sentence with ELMo
@@ -105,3 +92,9 @@ To improve/fix:
  - [x] Reduce dimensionality for visualization (PCA, t-SNE)
  - [x] Run in TensorBoard
  - [ ] Conclusions
+
+To improve/fix:
+ - [ ] Allow ELMo to use GPU for embedding (should just be installing PyTorch compatible with CUDA 9.0)
+ - [ ] Achieve more defined clusters
+
+
