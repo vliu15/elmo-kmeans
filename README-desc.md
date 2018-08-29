@@ -15,7 +15,7 @@ We combined deep learning and traditional NLP approaches to embed and cluster th
   After compiling all the transcriptions into one file, we decided to embed per sentence, so we split each transcription by periods and put these sentences into a text file, each on its own line. Then we tokenized each sentence into a list of words for embedding.
 
   Approaches tried (to worse results):
-    i. Transcription level (vs. sentence level)
+    - Transcription level (vs. sentence level)
 
   Approaches to try:
     i. Removing stop words (vs. leaving sentences as is)
