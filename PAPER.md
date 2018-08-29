@@ -66,7 +66,7 @@ Below are details of each step that was implemented:
 ## Results
 The pipeline delineated above has gotten us the best clusters so far. However, the clusters are far from perfect - it is often hard to find a common theme that defines a certain cluster; some clusters have outliers that do not seem to belong in their clusters.
 
-The best standing results are [here](http://github.optum.com/vliu/elmo/blob/master/clusters) in the `clusters` folder in this repository. The pipeline to generate these clusters looks like:
+The best standing results are [here](https://github.com/vliu15/elmo/tree/master/clusters) in the `clusters` folder in this repository. The pipeline to generate these clusters looks like:
 
 ```
    Preprocess at sentence level
@@ -75,6 +75,7 @@ The best standing results are [here](http://github.optum.com/vliu/elmo/blob/mast
 -> Take the third vector of every word
 -> Average all word vectors
 -> Run through SIF, removing first principal component
+-> Cluster with KMeans (`k`=100) and remove all clusters (specified in `remove.py`)
 -> Cluster hierarchically with KMeans (split 6 times for 32 clusters)
 ```
 
