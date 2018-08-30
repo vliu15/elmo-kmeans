@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import re
 from allennlp.commands.elmo import ElmoEmbedder
 from tqdm import *
 
@@ -117,6 +118,7 @@ def tokenize(params):
         # convert each sentence into list of tokens
         tokenized = []
         for s in text:
-            tokenized.append(s.split(' '))
+            s.replace("'", "")
+            tokenized.append(re.findall(r"[\w]+|[.,!?;]", s))
 
     return tokenized
