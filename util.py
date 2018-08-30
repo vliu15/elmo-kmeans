@@ -119,6 +119,6 @@ def tokenize(params):
         tokenized = []
         for s in text:
             s.replace("'", "")
-            tokenized.append(re.findall(r"[\w]+|[.,!?;]", s))
+            tokenized.append(re.findall(r"[\w]+|[0-9]+.[0-9]+|[.,!?;]", s))
 
     return tokenized
