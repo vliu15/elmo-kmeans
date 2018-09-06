@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 import re
 from allennlp.commands.elmo import ElmoEmbedder
@@ -14,14 +13,15 @@ def concat_word_vecs(sentence_vec, max_len=50):
     '''
 
     # pad/truncate to same shape
-    sentence_len = sentence_vec.get_shape().as_list()[0]
+    sentence_len = sentence_vec.shape[0]
     if sentence_len > max_len:
-        sentence_vec = tf.slice(sentence_vec, [0, 0], [max_len, -1])
+        sentence_vec = sentence_vec[0:max_len, :]
     elif sentence_len < max_len:
-        padding = tf.constant([[0, max_len - sentence_len], [0, 0]])
-        sentence_vec = tf.pad(sentence_vec, padding)
+        pad_width = np.array([[0, max_len - sentence_len], [0, 0]])
+        pad_values = np.array([[0, 0], [0, 0]])
+        sentence_vec = np.pad(sentence_vec, pad_width, 'constant', constant_values=pad_values)
     
-    return tf.concat([sentence_vec[i] for i in range(max_len)], axis=0)
+    return np.concat([sentence_vec[i] for i in range(max_len)], axis=0)
 
 
 def load_glove(glove_file):
@@ -59,17 +59,18 @@ def embed(params, sentences):
     if params.elmo:
         elmo = ElmoEmbedder(params.elmo_options_file, params.elmo_weights_file, params.elmo_cuda_device)
         for i in tqdm(range(len(sentences))):
-            embeddings.append(elmo.embed_sentence(sentences[i])) # shape: [3, n, 1024]
+            emb = np.array(elmo.embed_sentence(sentences[i]), dtype=np.float32)
+            embeddings.append(emb)
 
         # reduce word vectors: 3 -> 1
         reduce1 = []
         if params.bilm_layer_index == -1:
             for sentence in tqdm(embeddings):
-                reduce1.append(tf.reduce_mean(sentence, axis=0))
+                reduce1.append(np.mean(sentence, axis=0))
         elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
             for sentence in tqdm(embeddings):
-                bilm_layer = tf.slice(sentence, [params.bilm_layer_index, 0, 0], [1, -1, -1])
-                bilm_layer = tf.squeeze(bilm_layer, axis=0)
+                bilm_layer = sentence[params.bilm_layer_index, :, :]
+                bilm_layer = np.squeeze(bilm_layer, axis=0)
                 reduce1.append(bilm_layer) # shape: [n, 1024]
 
     # embed with GloVe
@@ -77,30 +78,30 @@ def embed(params, sentences):
         word_dict = load_glove(params.glove_word_file)
         reduce1 = []
         for i in tqdm(range(len(sentences))):
-            embeddings = tf.stack([word_dict[word]
+            embeddings = np.stack([word_dict[word]
                                    if word in word_dict.keys()
                                    else word_dict['OOV']
                                    for word in sentences[i]
-                                  ])
+                                  ], axis=0)
             reduce1.append(embeddings)
 
     # reduce sentence vectors -> 1
     reduce2 = []
     if params.avg_word_vecs:
         for sentence in tqdm(reduce1):
-            reduce2.append(tf.reduce_mean(sentence, axis=0))
+            reduce2.append(np.mean(sentence, axis=0))
     elif params.max_pool_word_vecs:
         for sentence in tqdm(reduce1):
-            reduce2.append(tf.reduce_max(sentence, axis=0))
+            reduce2.append(np.amax(sentence, axis=0))
     elif params.concat_word_vecs:
         for sentence in tqdm(reduce1):
             reduce2.append(concat_word_vecs(sentence, params.max_transcript_len))
     elif params.sum_word_vecs:
         for sentence in tqdm(reduce1):
-            reduce2.append(tf.reduce_sum(sentence, axis=0))
+            reduce2.append(np.sum(sentence, axis=0))
 
     # convert to a tensor of tensors
-    return tf.stack([x for x in reduce1])
+    return np.stack([x for x in reduce2], axis=0)
 
 
 def tokenize(params):
@@ -110,15 +111,14 @@ def tokenize(params):
     :return: list of lists of tokens (per sentence/transcription)
     '''
 
+    # with open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors) as f:
     with open(params.sentence_file, 'r') as f:
-
-        # read file line by line
-        text = f.read().splitlines()
 
         # convert each sentence into list of tokens
         tokenized = []
-        for s in text:
-            s.replace("'", "")
-            tokenized.append(re.findall(r"[\w]+|[0-9]+.[0-9]+|[.,!?;]", s))
+        for s in f:
+            s = s.replace("'", "")
+            tokenized.append(re.findall(r"[\w]+|[.,!?;:()%$&]", s))
+            # tokenized.append(s.split(' '))
 
     return tokenized

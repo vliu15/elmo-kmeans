@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 
 from util import embed, tokenize
@@ -19,12 +18,11 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-output_dir = os.path.join(os.getcwd(), "output", "l3-avg", "trimmed")
+output_dir = os.path.join(os.getcwd(), "output", "tl3-avg")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
-# embedding_file = os.path.join(output_dir, "embeddings.npy")
-embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
+embedding_file = os.path.join(output_dir, "embeddings.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 pca_file = os.path.join(output_dir, "embeddings_pc.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
@@ -32,99 +30,90 @@ km_labels_file = os.path.join(output_dir, "km_labels-10.json")
 km_opt_file = os.path.join(output_dir, "km_opt.csv")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
-# flags for adjusting parameters at runtime
-flags = tf.flags
+# parse arguments at runtime
+parser = argparse.ArgumentParser()
 
 # files
-flags.DEFINE_string("sentence_file", sentence_file, "file for embedding")
-flags.DEFINE_string("embedding_file", embedding_file, "file for sentence embeddings")
-flags.DEFINE_string("sif_file", sif_file, "file for SIF embeddings")
-flags.DEFINE_string("tsne_file", tsne_file, "file for t-SNE embeddings")
-flags.DEFINE_string("km_labels_file", km_labels_file, "file for KMeans cluster labels")
-flags.DEFINE_string("km_opt_file", km_opt_file, "file for KMeans cluster-inertia-silhouette output")
-flags.DEFINE_string("metadata_file", metadata_file, "file for TensorBoard metadata")
+parser.add_argument("--sentence_file", nargs='?', default=sentence_file, type=str, help="file for embedding")
+parser.add_argument("--embedding_file", nargs='?', default=embedding_file, type=str, help="file for sentence embeddings")
+parser.add_argument("--sif_file", nargs='?', default=sif_file, type=str, help="file for SIF embeddings")
+parser.add_argument("--tsne_file", nargs='?', default=tsne_file, type=str, help="file for t-SNE embeddings")
+parser.add_argument("--km_labels_file", nargs='?', default=km_labels_file, type=str, help="file for KMeans cluster labels")
+parser.add_argument("--km_opt_file", nargs='?', default=km_opt_file, type=str, help="file for KMeans cluster-inertia-silhouette output")
+parser.add_argument("--metadata_file", nargs='?', default=metadata_file, type=str, help="file for TensorBoard metadata")
 
 # mode
-flags.DEFINE_string("mode", "embed", "embed, sif, cluster, analyze, project, metadata, tensorboard")
+parser.add_argument("--mode", nargs='?', default="embed", type=str, help="embed, sif, cluster, project, metadata, tensorboard")
 
 # embed
-flags.DEFINE_boolean("elmo", True, "use ELMo for embeddings")
-flags.DEFINE_string("elmo_options_file", elmo_options_file, "options file for ELMo embedding")
-flags.DEFINE_string("elmo_weights_file", elmo_weights_file, "weights file for ELMo embedding")
-flags.DEFINE_integer("elmo_cuda_device", 1, "GPU device to run on")
+parser.add_argument("--encoding", nargs='?', default="ascii", type=str, help="encoding of input sentence file")
+parser.add_argument("--errors", nargs='?', default="ignore", type=str, help="error-handling of reading encoded input")
 
-flags.DEFINE_boolean("glove", False, "use GloVe for embeddings")
-flags.DEFINE_string("glove_word_file", glove_word_file, "word file for GloVe embedding")
-flags.DEFINE_string("glove_char_file", glove_char_file, "char file for GloVe embedding")
+parser.add_argument("--elmo", nargs='?', default=True, type=bool, help="use ELMo for embeddings")
+parser.add_argument("--elmo_options_file", nargs='?', default=elmo_options_file, type=str, help="options file for ELMo embedding")
+parser.add_argument("--elmo_weights_file", nargs='?', default=elmo_weights_file, type=str, help="weights file for ELMo embedding")
+parser.add_argument("--elmo_cuda_device", nargs='?', default=-1, type=int, help="GPU device to run on")
 
-flags.DEFINE_integer("bilm_layer_index", 2, "which bilm layer of ELMo to use, indexed from 0 (-1 for average)")
-flags.DEFINE_boolean("sum_word_vecs", False, "sum word vectors in the same sentence")
-flags.DEFINE_boolean("avg_word_vecs", False, "average word vectors in same sentence")
-flags.DEFINE_boolean("concat_word_vecs", False, "concatenate word vectors in the same sentence")
-flags.DEFINE_boolean("max_pool_word_vecs", True, "max pooling across word vectors in the same sentence")
-flags.DEFINE_integer("max_transcript_len", 30, "if concatenating, length to pad/truncate to") # trans/sent, 75/30
+parser.add_argument("--glove", nargs='?', default=False, type=bool, help="use GloVe for embeddings")
+parser.add_argument("--glove_word_file", nargs='?', default=glove_word_file, type=str, help="word file for GloVe embedding")
+parser.add_argument("--glove_char_file", nargs='?', default=glove_char_file, type=str, help="char file for GloVe embedding")
+
+parser.add_argument("--bilm_layer_index", nargs='?', default=2, type=int, help="which bilm layer of ELMo to use, indexed from 0 (-1 for average)")
+parser.add_argument("--sum_word_vecs", nargs='?', default=False, type=bool, help="sum word vectors in the same sentence")
+parser.add_argument("--avg_word_vecs", nargs='?', default=True, type=bool, help="average word vectors in same sentence")
+parser.add_argument("--concat_word_vecs", nargs='?', default=False, type=bool, help="concatenate word vectors in the same sentence")
+parser.add_argument("--max_pool_word_vecs", nargs='?', default=False, type=bool, help="max pooling across word vectors in the same sentence")
+parser.add_argument("--max_transcript_len", nargs='?', default=30, type=int, help="if concatenating, length to pad/truncate to")
 
 # sif
-flags.DEFINE_integer("sif_rmpc", 1, "number of principal components to remove")
+parser.add_argument("--sif_rmpc", nargs='?', default=1, type=int, help="number of principal components to remove")
 
 # cluster
-flags.DEFINE_boolean("kmeans", False, "use KMeans clustering")
-flags.DEFINE_string("kmeans_dir", os.path.join(output_dir, "kmeans"), "output file for KMeans clusters")
-flags.DEFINE_integer("n_clusters", 10, "n_clusters in KMeans function")
-flags.DEFINE_integer("n_init", 10, "n_init in KMeans function")
-flags.DEFINE_integer("max_iter", 300, "max_iter in KMeans function")
-flags.DEFINE_boolean("verbose", False, "verbose in KMeans function")
-flags.DEFINE_integer("n_jobs", -1, "n_jobs in KMeans function")
-flags.DEFINE_string("algorithm","auto", "algorithm in KMeans function")
+parser.add_argument("--kmeans", nargs='?', default=False, type=bool, help="use KMeans clustering")
+parser.add_argument("--kmeans_dir", nargs='?', default=os.path.join(output_dir, "kmeans"), type=str, help="output file for KMeans clusters")
+parser.add_argument("--n_clusters", nargs='?', default=10, type=int, help="n_clusters in KMeans function")
+parser.add_argument("--n_init", nargs='?', default=10, type=int, help="n_init in KMeans function")
+parser.add_argument("--max_iter", nargs='?', default=300, type=int, help="max_iter in KMeans function")
+parser.add_argument("--verbose", nargs='?', default=False, type=bool, help="verbose in KMeans function")
+parser.add_argument("--n_jobs", nargs='?', default=-1, type=int, help="n_jobs in KMeans function")
+parser.add_argument("--algorithm", nargs='?', default="auto", type=str, help="algorithm in KMeans function")
 
-flags.DEFINE_boolean("opt_k", False, "find optimal k")
-flags.DEFINE_integer("min_k", 10, "minimum k to try")
-flags.DEFINE_integer("max_k", 160, "maximum k to try")
-flags.DEFINE_integer("n_k", 15, "number of k's to try")
+parser.add_argument("--opt_k", nargs='?', default=True, type=bool, help="find optimal k")
+parser.add_argument("--min_k", nargs='?', default=10, type=int, help="minimum k to try")
+parser.add_argument("--max_k", nargs='?', default=160, type=int, help="maximum k to try")
+parser.add_argument("--n_k", nargs='?', default=15, type=int, help="number of k's to try")
 
-flags.DEFINE_boolean("hierarch_k", True, "compute kmeans hierarchically")
-flags.DEFINE_string("hierarch_dir", os.path.join(output_dir, "hierarchy"), "directory for hierarchy clusters")
-flags.DEFINE_integer("split_size", 2, "number of clusters at each level")
-flags.DEFINE_integer("n_iter", 6, "number of levels of hierarchy")
+parser.add_argument("--hierarch_k", nargs='?', default=False, type=bool, help="compute kmeans hierarchically")
+parser.add_argument("--hierarch_dir", nargs='?', default=os.path.join(output_dir, "hierarchy"), type=str, help="directory for hierarchy clusters")
+parser.add_argument("--split_size", nargs='?', default=2, type=int, help="number of clusters at each level")
+parser.add_argument("--n_iter", nargs='?', default=6, type=int, help="number of levels of hierarchy")
 
 # project
-flags.DEFINE_boolean("pca", False, "use pca for visualization")
-flags.DEFINE_integer("pc_n_components", 3, "n_components in PCA function")
+parser.add_argument("--pca", nargs='?', default=False, type=bool, help="use pca for visualization")
+parser.add_argument("--pc_n_components", nargs='?', default=3, type=int, help="n_components in PCA function")
 
-flags.DEFINE_boolean("tsne", True, "use tsne for visualization")
-flags.DEFINE_integer("ts_n_components", 3, "n_components in TSNE function")
-flags.DEFINE_integer("ts_perplexity", 50, "perplexity n TSNE function")
-flags.DEFINE_integer("ts_learning_rate", 10, "learning_rate in TSNE function")
-flags.DEFINE_integer("ts_n_iter", 5000," n_iter in TSNE function")
+parser.add_argument("--tsne", nargs='?', default=True, type=bool, help="use tsne for visualization")
+parser.add_argument("--ts_n_components", nargs='?', default=3, type=int, help="n_components in TSNE function")
+parser.add_argument("--ts_perplexity", nargs='?', default=50, help="perplexity n TSNE function")
+parser.add_argument("--ts_learning_rate", nargs='?', default=10, type=int, help="learning_rate in TSNE function")
+parser.add_argument("--ts_n_iter", nargs='?', default=5000, type=int, help="n_iter in TSNE function")
 
 # metadata
-flags.DEFINE_boolean("meta_labels", True, "use labels in metadata")
-flags.DEFINE_string("meta_labels_file", km_labels_file, "labels file to be used in metadata")
+parser.add_argument("--meta_labels", nargs='?', default=True, type=bool, help="use labels in metadata")
+parser.add_argument("--meta_labels_file", nargs='?', default=km_labels_file, type=str, help="labels file to be used in metadata")
 
 # tensorboard
-flags.DEFINE_string("log_dir", os.path.join(output_dir, "tensorboard"), "log directory for TensorBoard")
+parser.add_argument("--log_dir", nargs='?', default=os.path.join(output_dir, "tensorboard"), type=str, help="log directory for TensorBoard")
 
-params = flags.FLAGS
+params = parser.parse_args()
 
 
 if __name__ == "__main__":
 
     if params.mode == "embed":
         tokenized = tokenize(params)
-
-        with open(params.sentence_file, 'r') as f:
-            tokenized = f.read().splitlines()
-
-        # set up TF with GPU usage
-        with tf.device('/device:GPU:1'):
-            emb = embed(params, tokenized)
-        config = tf.ConfigProto(allow_soft_placement=True)
-        config.gpu_options.allow_growth = True
-
-        with tf.Session(config=config) as sess:
-            emb = sess.run(emb)
-            print("Saving embeddings...\n")
-            np.save(params.embedding_file, emb)
+        emb = embed(params, tokenized)
+        np.save(params.embedding_file, emb)
 
     if params.mode == "sif":
         sif(params)
