@@ -113,21 +113,27 @@ def iter_k(params, vectors, sentences, i, filename):
     if i == 0:
         return
 
-    km = KMeans(n_clusters=2,
+    km = KMeans(n_clusters=params.split_size,
                 n_init=params.n_init,
                 max_iter=params.max_iter,
                 verbose=params.verbose,
                 n_jobs=params.n_jobs,
                 algorithm=params.algorithm).fit(vectors)
     labels = km.labels_
+
+    # separate vectors by label
     for j in range(params.split_size):
         cluster_s, cluster_v = [], []
         for k in range(len(labels)):
             if labels[k] == j:
                 cluster_s.append(sentences[k])
                 cluster_v.append(vectors[k])
-        if len(cluster_s) >= params.n_init:
+
+        # split if possible
+        if len(cluster_s) >= params.split_size:
             iter_k(params, np.stack(cluster_v), cluster_s, i-1, filename + str(j))
+
+        # write clusters at each hierarchy
         with open(os.path.join(params.hierarch_dir, filename + str(j)), 'w') as f:
             f.writelines([s + '\n' for s in cluster_s])
 

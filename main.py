@@ -78,15 +78,15 @@ parser.add_argument("--verbose", nargs='?', default=False, type=bool, help="verb
 parser.add_argument("--n_jobs", nargs='?', default=-1, type=int, help="n_jobs in KMeans function")
 parser.add_argument("--algorithm", nargs='?', default="auto", type=str, help="algorithm in KMeans function")
 
-parser.add_argument("--opt_k", nargs='?', default=True, type=bool, help="find optimal k")
+parser.add_argument("--opt_k", nargs='?', default=False, type=bool, help="find optimal k")
 parser.add_argument("--min_k", nargs='?', default=10, type=int, help="minimum k to try")
 parser.add_argument("--max_k", nargs='?', default=160, type=int, help="maximum k to try")
 parser.add_argument("--n_k", nargs='?', default=15, type=int, help="number of k's to try")
 
-parser.add_argument("--hierarch_k", nargs='?', default=False, type=bool, help="compute kmeans hierarchically")
+parser.add_argument("--hierarch_k", nargs='?', default=True, type=bool, help="compute kmeans hierarchically")
 parser.add_argument("--hierarch_dir", nargs='?', default=os.path.join(output_dir, "hierarchy"), type=str, help="directory for hierarchy clusters")
 parser.add_argument("--split_size", nargs='?', default=2, type=int, help="number of clusters at each level")
-parser.add_argument("--n_iter", nargs='?', default=6, type=int, help="number of levels of hierarchy")
+parser.add_argument("--n_iter", nargs='?', default=7, type=int, help="number of levels of hierarchy")
 
 # project
 parser.add_argument("--pca", nargs='?', default=False, type=bool, help="use pca for visualization")

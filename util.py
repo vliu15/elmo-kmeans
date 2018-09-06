@@ -70,7 +70,6 @@ def embed(params, sentences):
         elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
             for sentence in tqdm(embeddings):
                 bilm_layer = sentence[params.bilm_layer_index, :, :]
-                bilm_layer = np.squeeze(bilm_layer, axis=0)
                 reduce1.append(bilm_layer) # shape: [n, 1024]
 
     # embed with GloVe
@@ -118,7 +117,6 @@ def tokenize(params):
         tokenized = []
         for s in f:
             s = s.replace("'", "")
-            tokenized.append(re.findall(r"[\w]+|[.,!?;:()%$&]", s))
-            # tokenized.append(s.split(' '))
+            tokenized.append(re.findall(r"[\w]+|[.,!?;:()%$&#]", s))
 
     return tokenized
