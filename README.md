@@ -58,12 +58,14 @@ docker exec -it elmo-embeddings /bin/bash
 python3.6 main.py
 ```
 
-To run on LSF:
+To run on LSF using GPU for embedding:
 
 ```bash
 bsub -o output.txt \
-     -env LSB_CONTAINER_IMAGE=docker.optum.com/dl_lab/elmo:tf-gpu \
-     sh -c "cd /data/elmo-embedding && python3.6 main.py --mode <mode>"
+     -gpu -
+     -env LSB_CONTAINER_IMAGE=docker.optum.com/dl_lab/elmo:tf-gpu-pytorch \
+     sh -c "cd /data/elmo-embedding \
+         && python3.6 main.py --mode <mode> --elmo_cuda_device=0"
 ```
 
 
@@ -94,7 +96,7 @@ Other nested output folders:
  - [ ] Conclusions
 
 To improve/fix:
- - [ ] Allow ELMo to use GPU for embedding (should just be installing PyTorch compatible with CUDA 9.0)
+ - [x] Allow ELMo to use GPU for embedding (UPDATE: GPU speedup by as much as 4x)
  - [ ] Achieve more defined clusters
 
 

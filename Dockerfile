@@ -1,4 +1,4 @@
-FROM docker.optum.com/dl_lab/elmo:tf-gpu
+FROM docker.optum.com/dl_lab/elmo:tf-gpu-pytorch
 
 RUN apt-get install wget && apt-get install update
 
@@ -16,4 +16,4 @@ RUN wget -o $MODEL_DIR/weights.hdf5 https://s3-us-west-2.amazonaws.com/allennlp/
 # wget to install GloVe files
 RUN wget -o $MODEL_DIR/glove.840B.300d.zip http://nlp.stanford.edu/data/glove.840B.300d.zip && unzip $MODEL_DIR/glove.840B.300d.zip -d $MODEL_DIR
 
-RUN wget -o $MODEL_DIR/glove.840B.300d-char.txt https://raw.githubusercontent.com/minimaxir/char-embeddings/master/glove.840B.300d-char.txt
+# RUN wget -o $MODEL_DIR/glove.840B.300d-char.txt https://raw.githubusercontent.com/minimaxir/char-embeddings/master/glove.840B.300d-char.txt

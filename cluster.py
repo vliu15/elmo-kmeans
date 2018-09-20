@@ -37,7 +37,7 @@ def kmeans(params):
 
     # write list of labels to output
     with open(params.km_labels_file, 'w') as f:
-        json.dump(labels.tolist(), f)
+        json.dump(labels, f)
     
     # write labels to .txt files
     for i in tqdm(range(len(labels))):
@@ -98,10 +98,14 @@ def hierarch_k(params):
     os.makedirs(params.hierarch_dir)
 
     # cluster iteratively
-    iter_k(params, vectors, sentences, params.n_iter, '')
+    master = ['']*len(sentences)
+    ids = [i for i in range(len(sentences))]
+    iter_k(params, master, ids, vectors, sentences, params.n_iter, '')
+    with open(params.km_labels_file, 'w')as f:
+        json.dump(master, f)
 
 
-def iter_k(params, vectors, sentences, i, filename):
+def iter_k(params, master, ids, vectors, sentences, i, filename):
     '''
     Helper function for hierarch_k to perform iterations.
     :vectors: NumPy arrays to be clustered
@@ -123,15 +127,17 @@ def iter_k(params, vectors, sentences, i, filename):
 
     # separate vectors by label
     for j in range(params.split_size):
-        cluster_s, cluster_v = [], []
+        cluster_s, cluster_v, idx = [], [], []
         for k in range(len(labels)):
             if labels[k] == j:
                 cluster_s.append(sentences[k])
                 cluster_v.append(vectors[k])
+                idx.append(ids[k])
+                master[ids[k]] += str(j)
 
         # split if possible
         if len(cluster_s) >= params.split_size:
-            iter_k(params, np.stack(cluster_v), cluster_s, i-1, filename + str(j))
+            iter_k(params, master, idx, np.stack(cluster_v), cluster_s, i-1, filename + str(j))
 
         # write clusters at each hierarchy
         with open(os.path.join(params.hierarch_dir, filename + str(j)), 'w') as f:

@@ -1,6 +1,12 @@
 import json
 
 def write_meta(params):
+    '''
+    Write metadata of sentences (and labels) to a file.
+    :params.meta_labels_file: file of sentence labels
+    :params.sentence_file: file of sentences
+    :params.metadata_file: output file
+    '''
 
     if not params.meta_labels_file == None:
         sentences = [sentence.rstrip('\n') for sentence in open(params.sentence_file)]

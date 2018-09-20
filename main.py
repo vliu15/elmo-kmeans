@@ -18,15 +18,16 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-output_dir = os.path.join(os.getcwd(), "output", "tl3-avg")
+output_dir = os.path.join(os.getcwd(), "output", "l3-avg")
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 sentence_file = os.path.join(output_dir, "sentences.txt")
 embedding_file = os.path.join(output_dir, "embeddings.npy")
+# embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 pca_file = os.path.join(output_dir, "embeddings_pc.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
-km_labels_file = os.path.join(output_dir, "km_labels-10.json")
+km_labels_file = os.path.join(output_dir, "km_labels.json")
 km_opt_file = os.path.join(output_dir, "km_opt.csv")
 metadata_file = os.path.join(output_dir, "metadata.tsv")
 
@@ -52,7 +53,7 @@ parser.add_argument("--errors", nargs='?', default="ignore", type=str, help="err
 parser.add_argument("--elmo", nargs='?', default=True, type=bool, help="use ELMo for embeddings")
 parser.add_argument("--elmo_options_file", nargs='?', default=elmo_options_file, type=str, help="options file for ELMo embedding")
 parser.add_argument("--elmo_weights_file", nargs='?', default=elmo_weights_file, type=str, help="weights file for ELMo embedding")
-parser.add_argument("--elmo_cuda_device", nargs='?', default=-1, type=int, help="GPU device to run on")
+parser.add_argument("--elmo_cuda_device", nargs='?', default=0, type=int, help="GPU device to run on")
 
 parser.add_argument("--glove", nargs='?', default=False, type=bool, help="use GloVe for embeddings")
 parser.add_argument("--glove_word_file", nargs='?', default=glove_word_file, type=str, help="word file for GloVe embedding")
@@ -60,9 +61,9 @@ parser.add_argument("--glove_char_file", nargs='?', default=glove_char_file, typ
 
 parser.add_argument("--bilm_layer_index", nargs='?', default=2, type=int, help="which bilm layer of ELMo to use, indexed from 0 (-1 for average)")
 parser.add_argument("--sum_word_vecs", nargs='?', default=False, type=bool, help="sum word vectors in the same sentence")
-parser.add_argument("--avg_word_vecs", nargs='?', default=True, type=bool, help="average word vectors in same sentence")
+parser.add_argument("--avg_word_vecs", nargs='?', default=False, type=bool, help="average word vectors in same sentence")
 parser.add_argument("--concat_word_vecs", nargs='?', default=False, type=bool, help="concatenate word vectors in the same sentence")
-parser.add_argument("--max_pool_word_vecs", nargs='?', default=False, type=bool, help="max pooling across word vectors in the same sentence")
+parser.add_argument("--max_pool_word_vecs", nargs='?', default=True, type=bool, help="max pooling across word vectors in the same sentence")
 parser.add_argument("--max_transcript_len", nargs='?', default=30, type=int, help="if concatenating, length to pad/truncate to")
 
 # sif
@@ -78,15 +79,15 @@ parser.add_argument("--verbose", nargs='?', default=False, type=bool, help="verb
 parser.add_argument("--n_jobs", nargs='?', default=-1, type=int, help="n_jobs in KMeans function")
 parser.add_argument("--algorithm", nargs='?', default="auto", type=str, help="algorithm in KMeans function")
 
-parser.add_argument("--opt_k", nargs='?', default=False, type=bool, help="find optimal k")
+parser.add_argument("--opt_k", nargs='?', default=True, type=bool, help="find optimal k")
 parser.add_argument("--min_k", nargs='?', default=10, type=int, help="minimum k to try")
-parser.add_argument("--max_k", nargs='?', default=160, type=int, help="maximum k to try")
-parser.add_argument("--n_k", nargs='?', default=15, type=int, help="number of k's to try")
+parser.add_argument("--max_k", nargs='?', default=110, type=int, help="maximum k to try")
+parser.add_argument("--n_k", nargs='?', default=10, type=int, help="number of k's to try")
 
-parser.add_argument("--hierarch_k", nargs='?', default=True, type=bool, help="compute kmeans hierarchically")
+parser.add_argument("--hierarch_k", nargs='?', default=False, type=bool, help="compute kmeans hierarchically")
 parser.add_argument("--hierarch_dir", nargs='?', default=os.path.join(output_dir, "hierarchy"), type=str, help="directory for hierarchy clusters")
 parser.add_argument("--split_size", nargs='?', default=2, type=int, help="number of clusters at each level")
-parser.add_argument("--n_iter", nargs='?', default=7, type=int, help="number of levels of hierarchy")
+parser.add_argument("--n_iter", nargs='?', default=4, type=int, help="number of levels of hierarchy")
 
 # project
 parser.add_argument("--pca", nargs='?', default=False, type=bool, help="use pca for visualization")
