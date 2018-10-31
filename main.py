@@ -15,15 +15,18 @@ elmo_weights_file = os.path.join(os.getcwd(), "model", "weights.hdf5")
 
 # GloVe model to create embeddings
 glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
-glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
+# glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-output_dir = os.path.join(os.getcwd(), "output", "l3-avg")
+filename = "news.2011.en.shuffled"
+sentence_dir = os.path.join(os.getcwd(), "data")
+sentence_file = os.path.join(sentence_dir, filename)
+
+output_dir = os.path.join(os.getcwd(), "output", os.path.splitext(filename)[0])
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
-sentence_file = os.path.join(output_dir, "sentences.txt")
+
 embedding_file = os.path.join(output_dir, "embeddings.npy")
-# embedding_file = os.path.join(output_dir, "embeddings_sif.npy")
 sif_file = os.path.join(output_dir, "embeddings_sif.npy")
 pca_file = os.path.join(output_dir, "embeddings_pc.npy")
 tsne_file = os.path.join(output_dir, "embeddings_ts.npy")
@@ -134,6 +137,7 @@ if __name__ == "__main__":
             tsne(params)
 
     if params.mode == "metadata":
+        # optional write cluster labels to metadata
         if not params.meta_labels:
             params.meta_labels_file = None
         write_meta(params)
