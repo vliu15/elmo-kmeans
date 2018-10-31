@@ -18,9 +18,11 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 # glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-filename = "news.2011.en.shuffled"
-sentence_dir = os.path.join(os.getcwd(), "data")
-sentence_file = os.path.join(sentence_dir, filename)
+sentence_dir = os.getcwd()
+sentence_file = os.path.join(sentence_dir, "")
+if sentence_file == os.path.join(sentence_dir, ""):
+    print("Specify sentence file.")
+    raise NameError
 
 output_dir = os.path.join(os.getcwd(), "output", os.path.splitext(filename)[0])
 if not os.path.exists(output_dir):
