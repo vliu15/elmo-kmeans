@@ -75,15 +75,6 @@ Other nested output folders:
  * `hierarchy`: for clustered sentences with hierarchical kmeans
 
 
-## TO-DO
- - [x] Preprocess transcriptions
- - [x] Embed each sentence with ELMo
- - [x] Enhance embeddings with SIF
- - [x] Cluster using SKLearn KMeans (optional: hierarchically)
- - [x] Find optimal k using elbow method and silhouette scores (optional)
- - [x] Reduce dimensionality for visualization (PCA, t-SNE)
- - [x] Run in TensorBoard
-
 ## GPU-acceleration:
  - [x] Allow ELMo to use GPU for embedding (UPDATE: GPU speedup by as much as 4x)
  - [ ] Utilize NVIDIA Rapids cuML to GPU-accelerate clustering (by ~10x)
