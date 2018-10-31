@@ -1,5 +1,5 @@
-# ELMo Embeddings for Medica transcriptions
-To convert Optum's Medica speech transcriptions to ELMo embeddings per sentence for clustering.
+# ELMo Embeddings for Clustering
+To convert text datasets into clusters based on topic. Currently in progress for benchmarking NVIDIA Rapids cuML/pyGDF for performance.
 
 
 ## Requirements:
@@ -58,16 +58,6 @@ docker exec -it elmo-embeddings /bin/bash
 python3.6 main.py
 ```
 
-To run on LSF using GPU for embedding:
-
-```bash
-bsub -o output.txt \
-     -gpu -
-     -env LSB_CONTAINER_IMAGE=docker.optum.com/dl_lab/elmo:tf-gpu-pytorch \
-     sh -c "cd /data/elmo-embedding \
-         && python3.6 main.py --mode <mode> --elmo_cuda_device=0"
-```
-
 
 ## Outputs
 An output folder will be created in the current directory containing:
@@ -93,10 +83,9 @@ Other nested output folders:
  - [x] Find optimal k using elbow method and silhouette scores (optional)
  - [x] Reduce dimensionality for visualization (PCA, t-SNE)
  - [x] Run in TensorBoard
- - [ ] Conclusions
 
-To improve/fix:
+## GPU-acceleration:
  - [x] Allow ELMo to use GPU for embedding (UPDATE: GPU speedup by as much as 4x)
- - [ ] Achieve more defined clusters
+ - [ ] Utilize NVIDIA Rapids cuML to GPU-accelerate clustering (by ~10x)
 
 
