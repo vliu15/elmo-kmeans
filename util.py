@@ -76,8 +76,8 @@ def embed(params):
         if params.avg_word_vecs:
             return np.mean(emb, axis=0)
 
-    f = open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors)
-    # f = open(params.sentence_file, 'r')
+    # f = open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors)
+    f = open(params.sentence_file, 'r')
     num = file_len(f)
 
     # initialize embedding methods
@@ -92,6 +92,8 @@ def embed(params):
     for i, s in tqdm(enumerate(f, 1), total=num):
         s = s.replace("'", "")
         s = re.findall(r"[\w]+|[.,!?;:()%$&#]", s)
+        if len(s) == 0:
+            continue
 
         # embed with ELMo
         if params.elmo:

@@ -18,15 +18,15 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 # glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-filename = "agent_pairs.txt"
-sentence_dir = "../customer2agent/ChatLogs/c-a"
+filename = "medica-s.txt"
+sentence_dir = os.path.join(os.getcwd(), "data")
 # sentence_dir = os.getcwd()
 sentence_file = os.path.join(sentence_dir, filename)
 if sentence_file == os.path.join(sentence_dir, ""):
     print("Specify sentence file.")
     raise NameError
 
-output_dir = os.path.join(os.getcwd(), "test", os.path.splitext(filename)[0])
+output_dir = os.path.join(os.getcwd(), "rapids", os.path.splitext(filename)[0])
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -68,9 +68,9 @@ parser.add_argument("--glove_word_file", nargs='?', default=glove_word_file, typ
 
 parser.add_argument("--bilm_layer_index", nargs='?', default=2, type=int, help="which bilm layer of ELMo to use, indexed from 0 (-1 for average)")
 parser.add_argument("--sum_word_vecs", nargs='?', default=False, type=bool, help="sum word vectors in the same sentence")
-parser.add_argument("--avg_word_vecs", nargs='?', default=False, type=bool, help="average word vectors in same sentence")
+parser.add_argument("--avg_word_vecs", nargs='?', default=True, type=bool, help="average word vectors in same sentence")
 parser.add_argument("--concat_word_vecs", nargs='?', default=False, type=bool, help="concatenate word vectors in the same sentence")
-parser.add_argument("--max_pool_word_vecs", nargs='?', default=True, type=bool, help="max pooling across word vectors in the same sentence")
+parser.add_argument("--max_pool_word_vecs", nargs='?', default=False, type=bool, help="max pooling across word vectors in the same sentence")
 parser.add_argument("--max_transcript_len", nargs='?', default=30, type=int, help="if concatenating, length to pad/truncate to")
 
 # sif
