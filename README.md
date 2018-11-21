@@ -47,7 +47,6 @@ Adjust runtime flags in `main.py`
 
 A couple auxiliary files:
  * Run `sh clean.sh` to convert transcriptions to lower case and remove stop words
- * Run `python3 remove.py` to remove clusters (specified in program)
 
 ## Run
 To run inside a Docker container:
@@ -79,4 +78,14 @@ Other nested output folders:
  - [x] Allow ELMo to use GPU for embedding (UPDATE: GPU speedup by as much as 4x)
  - [ ] Utilize NVIDIA Rapids cuML to GPU-accelerate clustering (by ~10x)
 
+
+## TO-DO
+ - [x] Preprocess transcriptions
+ - [x] Embed each sentence with ELMo
+ - [x] Enhance embeddings with SIF
+ - [x] Cluster using SKLearn KMeans (optional: hierarchically)
+ - [x] Find optimal k using elbow method and silhouette scores (optional)
+ - [x] Reduce dimensionality for visualization (PCA, t-SNE)
+ - [x] Run in TensorBoard
+ - [ ] Conclusions
 

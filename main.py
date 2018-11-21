@@ -1,6 +1,6 @@
 import numpy as np
 
-from util import embed, tokenize
+from util import embed
 from sif import sif
 from cluster import kmeans, opt_k, hierarch_k
 from project import pca, tsne
@@ -18,13 +18,15 @@ glove_word_file = os.path.join(os.getcwd(), "model", "glove.840B.300d.txt")
 # glove_char_file = os.path.join(os.getcwd(), "model", "glove.840B.300d-char.txt")
 
 # output files
-sentence_dir = os.getcwd()
-sentence_file = os.path.join(sentence_dir, "")
+filename = "agent_pairs.txt"
+sentence_dir = "../customer2agent/ChatLogs/c-a"
+# sentence_dir = os.getcwd()
+sentence_file = os.path.join(sentence_dir, filename)
 if sentence_file == os.path.join(sentence_dir, ""):
     print("Specify sentence file.")
     raise NameError
 
-output_dir = os.path.join(os.getcwd(), "output", os.path.splitext(filename)[0])
+output_dir = os.path.join(os.getcwd(), "test", os.path.splitext(filename)[0])
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -62,7 +64,7 @@ parser.add_argument("--elmo_cuda_device", nargs='?', default=0, type=int, help="
 
 parser.add_argument("--glove", nargs='?', default=False, type=bool, help="use GloVe for embeddings")
 parser.add_argument("--glove_word_file", nargs='?', default=glove_word_file, type=str, help="word file for GloVe embedding")
-parser.add_argument("--glove_char_file", nargs='?', default=glove_char_file, type=str, help="char file for GloVe embedding")
+# parser.add_argument("--glove_char_file", nargs='?', default=glove_char_file, type=str, help="char file for GloVe embedding")
 
 parser.add_argument("--bilm_layer_index", nargs='?', default=2, type=int, help="which bilm layer of ELMo to use, indexed from 0 (-1 for average)")
 parser.add_argument("--sum_word_vecs", nargs='?', default=False, type=bool, help="sum word vectors in the same sentence")
@@ -117,9 +119,7 @@ params = parser.parse_args()
 if __name__ == "__main__":
 
     if params.mode == "embed":
-        tokenized = tokenize(params)
-        emb = embed(params, tokenized)
-        np.save(params.embedding_file, emb)
+        embed(params)
 
     if params.mode == "sif":
         sif(params)

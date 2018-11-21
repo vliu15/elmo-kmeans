@@ -4,6 +4,17 @@ from allennlp.commands.elmo import ElmoEmbedder
 from tqdm import *
 
 
+def file_len(f):
+    """
+    Returns number of lines in a file.
+    :f: file object reader
+    """
+
+    for n, l in enumerate(f, 1):
+        pass
+    f.seek(0) # rewind
+    return n
+
 def concat_word_vecs(sentence_vec, max_len=50):
     '''
     Concatenate word embeddings together to get sentence/transcription vector.
@@ -41,7 +52,7 @@ def load_glove(glove_file):
     return word_dict
 
 
-def embed(params, sentences):
+def embed(params):
     '''
     Embed a list of sentences using ELMo or GloVe.
     :params.elmo: use ELMo
@@ -49,74 +60,80 @@ def embed(params, sentences):
     :params.concat_word_vecs: concatenate word vectors
     :params.sum_word_vecs: sum word vectors
     :params.avg_word_vecs: average word vectors
-    :sentences: list of tokenized sentences/transcriptions to embed
     :return: a Tensor of Tensors (sentence/transcription embeddings)
     '''
 
-    embeddings = []
+    def compress(emb):
+        """
+        Compress a matrix of word vectors into a sentence vector.
+        """
+        if params.sum_word_vecs:
+            return np.sum(emb, axis=0)
+        if params.max_pool_word_vecs:
+            return np.amax(emb, axis=0)
+        if params.concat_word_vecs:
+            return concat_word_vecs(emb, params.max_transcript_len)
+        if params.avg_word_vecs:
+            return np.mean(emb, axis=0)
 
-    # embed with ELMo
+    f = open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors)
+    # f = open(params.sentence_file, 'r')
+    num = file_len(f)
+
+    # initialize embedding methods
     if params.elmo:
         elmo = ElmoEmbedder(params.elmo_options_file, params.elmo_weights_file, params.elmo_cuda_device)
-        for i in tqdm(range(len(sentences))):
-            emb = np.array(elmo.embed_sentence(sentences[i]), dtype=np.float32)
-            embeddings.append(emb)
-
-        # reduce word vectors: 3 -> 1
-        reduce1 = []
-        if params.bilm_layer_index == -1:
-            for sentence in tqdm(embeddings):
-                reduce1.append(np.mean(sentence, axis=0))
-        elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
-            for sentence in tqdm(embeddings):
-                bilm_layer = sentence[params.bilm_layer_index, :, :]
-                reduce1.append(bilm_layer) # shape: [n, 1024]
-
-    # embed with GloVe
-    elif params.glove:
+    if params.glove:
         word_dict = load_glove(params.glove_word_file)
-        reduce1 = []
-        for i in tqdm(range(len(sentences))):
-            embeddings = np.stack([word_dict[word]
+
+    e_emb, g_emb = [], []
+
+    # tokenize each line
+    for i, s in tqdm(enumerate(f, 1), total=num):
+        s = s.replace("'", "")
+        s = re.findall(r"[\w]+|[.,!?;:()%$&#]", s)
+
+        # embed with ELMo
+        if params.elmo:
+
+            # write to prevent OOM
+            if i % 500000 == 0:
+                np.save('elmo%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
+                print('Wrote to elmo%d_'%(i//500000) + params.embedding_file)
+                e_emb = []
+
+            emb = np.array(elmo.embed_sentence(s), dtype=np.float32)
+
+            # reduce word vectors: 3 -> 1
+            if params.bilm_layer_index == -1:
+                emb = np.mean(emb, axis=0)
+            elif params.bilm_layer_index <= 2 and params.bilm_layer_index >= 0:
+                emb = emb[params.bilm_layer_index, :, :] # shape: [n, 1024]
+
+            # reduce sentence vectors -> 1
+            e_emb.append(compress(emb))
+
+        # embed with GloVe
+        if params.glove:
+
+            # write to prevent OOM
+            if i % 500000 == 0:
+                np.save('glove%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
+                print('Wrote to glove%d_'%(i//500000) + params.embedding_file)
+                g_emb = []
+
+            emb = np.stack([word_dict[word]
                                    if word in word_dict.keys()
                                    else word_dict['OOV']
-                                   for word in sentences[i]
+                                   for word in s
                                   ], axis=0)
-            reduce1.append(embeddings)
 
-    # reduce sentence vectors -> 1
-    reduce2 = []
-    if params.avg_word_vecs:
-        for sentence in tqdm(reduce1):
-            reduce2.append(np.mean(sentence, axis=0))
-    elif params.max_pool_word_vecs:
-        for sentence in tqdm(reduce1):
-            reduce2.append(np.amax(sentence, axis=0))
-    elif params.concat_word_vecs:
-        for sentence in tqdm(reduce1):
-            reduce2.append(concat_word_vecs(sentence, params.max_transcript_len))
-    elif params.sum_word_vecs:
-        for sentence in tqdm(reduce1):
-            reduce2.append(np.sum(sentence, axis=0))
+            # reduce sentence vectors -> 1
+            g_emb.append(compress(emb))
 
-    # convert to a tensor of tensors
-    return np.stack([x for x in reduce2], axis=0)
-
-
-def tokenize(params):
-    '''
-    Tokenize a file per line by space ' '.
-    :params.sentence_file: file to be tokenized
-    :return: list of lists of tokens (per sentence/transcription)
-    '''
-
-    # with open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors) as f:
-    with open(params.sentence_file, 'r') as f:
-
-        # convert each sentence into list of tokens
-        tokenized = []
-        for s in f:
-            s = s.replace("'", "")
-            tokenized.append(re.findall(r"[\w]+|[.,!?;:()%$&#]", s))
-
-    return tokenized
+    if len(e_emb) > 0:
+        np.save('elmo%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
+        print('Wrote to elmo%d_'%(i//500000) + params.embedding_file)
+    if len(g_emb) > 0:
+        np.save('glove%d_'%(i//500000) + params.embedding_file, np.stack(g_emb, axis=0))
+        print('Wrote to glove%d_'%(i//500000) + params.embedding_file)

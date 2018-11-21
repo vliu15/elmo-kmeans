@@ -1,0 +1,6 @@
+__pycache__
+data/*
+clusters/*
+model/*
+test/*
+output/*
