@@ -1,6 +1,6 @@
 import numpy as np
 
-from util import embed
+from embed import embed
 from sif import sif
 from cluster import kmeans, opt_k, hierarch_k
 from project import pca, tsne
