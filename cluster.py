@@ -33,7 +33,7 @@ def kmeans(params):
     labels = km.labels_
     inertia = km.inertia_
     silhouette = silhouette_score(vectors, labels)
-    print("Clusters: %d \t Inertia: %.5f \t 'silhouette: %.5f\n" % (params.n_clusters, inertia, silhouette))
+    print("Clusters: %d \t Inertia: %.5f \t 'Silhouette: %.5f\n" % (params.n_clusters, inertia, silhouette))
 
     # write list of labels to output
     with open(params.km_labels_file, 'w') as f:
