@@ -1,6 +1,5 @@
 __pycache__
-data/*
-clusters/*
-model/*
-test/*
-output/*
+data
+model
+test
+output
