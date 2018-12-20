@@ -1,5 +1,5 @@
 import numpy as np
-import re
+import re, os
 from allennlp.commands.elmo import ElmoEmbedder
 from tqdm import *
 
@@ -76,6 +76,7 @@ def embed(params):
         if params.avg_word_vecs:
             return np.mean(emb, axis=0)
 
+    prefix, suffix = os.path.splitext(params.embedding_file)
     # f = open(params.sentence_file, 'r', encoding=params.encoding, errors=params.errors)
     f = open(params.sentence_file, 'r')
     num = file_len(f)
@@ -100,8 +101,8 @@ def embed(params):
 
             # write to prevent OOM
             if i % 500000 == 0:
-                np.save('elmo%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
-                print('Wrote to elmo%d_'%(i//500000) + params.embedding_file)
+                np.save(prefix + '_elmo%d'%(i//500000) + suffix, np.stack(e_emb, axis=0))
+                print('Wrote to ' + prefix + '_elmo%d'%(i//500000) + suffix)
                 e_emb = []
 
             emb = np.array(elmo.embed_sentence(s), dtype=np.float32)
@@ -120,8 +121,8 @@ def embed(params):
 
             # write to prevent OOM
             if i % 500000 == 0:
-                np.save('glove%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
-                print('Wrote to glove%d_'%(i//500000) + params.embedding_file)
+                np.save(prefix + '_glove%d'%(i//500000) + suffix, np.stack(e_emb, axis=0))
+                print('Wrote to ' + prefix + '_glove%d'%(i//500000) + suffix)
                 g_emb = []
 
             emb = np.stack([word_dict[word]
@@ -134,8 +135,8 @@ def embed(params):
             g_emb.append(compress(emb))
 
     if len(e_emb) > 0:
-        np.save('elmo%d_'%(i//500000) + params.embedding_file, np.stack(e_emb, axis=0))
-        print('Wrote to elmo%d_'%(i//500000) + params.embedding_file)
+        np.save(prefix + '_elmo%d'%(i//500000) + suffix, np.stack(e_emb, axis=0))
+        print('Wrote to ' + prefix + '_elmo%d'%(i//500000) + suffix)
     if len(g_emb) > 0:
-        np.save('glove%d_'%(i//500000) + params.embedding_file, np.stack(g_emb, axis=0))
-        print('Wrote to glove%d_'%(i//500000) + params.embedding_file)
+        np.save(prefix + '_glove%d'%(i//500000) + suffix, np.stack(g_emb, axis=0))
+        print('Wrote to ' + prefix + '_glove%d'%(i//500000) + suffix)
